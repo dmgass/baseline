@@ -11,11 +11,35 @@ class Baseline(object):
 
     z__registered_atexit = False
 
+    _all_instances = {}
+
+    def __new__(cls, text):
+
+        frame = inspect.getouterframes(inspect.currentframe())[1]
+        path = os.path.abspath(frame[1])
+        linenum = frame[2]
+
+        key = (path, linenum)
+
+        try:
+            instance = cls._all_instances[key]
+        except KeyError:
+            instance = super(Baseline, cls).__new__(cls)
+            instance.z__path = path
+            instance.z__linenum = linenum
+            cls._all_instances[key] = instance
+        else:
+            if text != instance.z__raw_text:
+                raise RuntimeError('varying baseline text not allowed')
+
+        return instance
+
     def __init__(self, text):
 
-        frame = inspect.getouterframes(inspect.currentframe())[2]
-        self.z__path = os.path.abspath(frame[1])
-        self.z__linenum = frame[2]
+        if hasattr(self, "z__raw_text"):
+            return
+
+        self.z__raw_text = text
 
         lines = text.split('\n')
 
@@ -58,19 +82,51 @@ class Baseline(object):
     @property
     def z__update(self):
         update = '\n******\n'.join(self._updates)
-        return '\n'.join((indent + line).rstrip() for line in lines)
+        return '\n'.join(
+            (' ' * self._indent + line).rstrip() for line in update.split('\n'))
 
+    @staticmethod
     def z__atexit_callback():
         scripts = {}
         for baseline in Baseline.z__bad_baselines:
             try:
                 script = scripts[baseline.z__path]
             except KeyError:
-                script = Script(baseline.path)
-                scripts[baseline.path] = script
+                script = Script(baseline.z__path)
+                scripts[baseline.z__path] = script
 
             script.add_mismatch(baseline)
 
         for key in sorted(scripts):
+            print "SCRIPT", script.path
             script = scripts[key]
             script.update()
+
+
+x = Baseline("""
+line 1
+line 2
+""")
+
+
+heredoc = """
+line 1
+    line 2
+line 3
+"""
+
+print x == heredoc
+print x == heredoc + 'line 4'
+
+y = Baseline("""
+line 1
+line 2
+""")
+
+heredoc2 = """
+line 1
+line 2
+line 3
+"""
+
+print y == heredoc2

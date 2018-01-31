@@ -49,7 +49,7 @@ class Mode(Enum):
 class Script(object):
 
     REGEX = re.compile(
-        r'(?P<prefix>.*?""")(?P<docstr>.*?)(?P<suffix>""".*)', re.DOTALL)
+        r'(?P<prefix>.*?)"""(?P<docstr>.*?""")(?P<suffix>.*)', re.DOTALL)
 
     instances = {}
 
@@ -63,56 +63,49 @@ class Script(object):
         cls.instances[path] = cls(path)
 
     def add_mismatch(self, baseline):
-        self.mismatches[baseline.linenum] = baseline.z__update
+        self.mismatches[baseline.z__linenum] = baseline.z__update
 
     @property
     def original_lines(self):
         if self.original_lines_list is None:
             with open(self.path, 'r') as fh:
-                self.original_lines_list = tuple(fh.read().split('\n'))
+                self.original_lines_list = fh.read().split('\n')
 
         return self.original_lines_list
     
-    def get_docstr_match(self, lines, linenum):
-        content = '\n'.join(lines[linenum:])
+    def replace_lines(self, linenum, update):
+        lines = self.original_lines
 
-        match = self.REGEX.match(content)
+        count = 0
+        for index in xrange(linenum - 1, -1, -1):
+            count += lines[index].count('"""')
+            if count >= 2:
+                linenum = index
+                break
+        else:
+            docstr_not_found = (
+                '{}:{}: could not find baseline docstring'
+                ''.format(show_path(self.path), linenum))
+            raise RuntimeError(docstr_not_found)
+
+        old_content = '\n'.join(lines[linenum:])
+
+        match = self.REGEX.match(old_content)
 
         if match is None:
             docstr_not_found = (
                 '{}:{}: could not find docstring'.format(self.path, linenum))
             raise RuntimeError(docstr_not_found)
 
-        return match
-
-    def replace_docstr_lines(self, lines, linenum, docstr, above=False):
-        if above:
-            count = 0
-            for index in xrange(linenum - 1, -1, -1):
-                count += lines[index].count('"""')
-                if count >= 2:
-                    linenum = index
-                    break
-            else:
-                docstr_not_found = (
-                    '{}:{}: could not find baseline docstring'.format(self.path, linenum))
-                raise RuntimeError(docstr_not_found)
-
-        match = self.get_docstr_match(lines, linenum)
-
-        # determine docstr indent by number of characters before opening triple quote
-        # in old docstring
-        indent = ' ' * len(match.group('prefix').split('\n')[-1].rstrip('"'))
-
-        docstr_lines = [
-            (indent + x if i else x) for (i, x) in enumerate(docstr.split('\n'))]
-
-        new_content = (
-                match.group('prefix') + '\n'.join(docstr_lines) + match.group('suffix'))
+        new_content = '{}r"""{}"""{}'.format(
+            match.group('prefix'), update, match.group('suffix'))
 
         lines[linenum:] = new_content.split('\n')
 
-    def get_filename(self, desc):
-        basename, ext = os.path.splitext(self.path)
-        return '{}.{}{}'.format(basename, desc, ext)
-
+    def update(self):
+        for linenum in reversed(sorted(self.mismatches)):
+            self.replace_lines(linenum, self.mismatches[linenum])
+        print "UPDATED:", showpath(self.path)
+        path = self.path.replace('.py', '.update.py')
+        with open(path, 'w') as fh:
+            fh.write('\n'.join(self.original_lines))
