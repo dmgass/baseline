@@ -23,16 +23,7 @@
 # standard library
 import os
 import re
-import subprocess
 from enum import Enum
-
-
-def showpath(path):
-    # TODO make method
-    retval = os.path.relpath(path, os.getcwd())
-    if path.startswith('..'):
-        retval = path
-    return retval
 
 
 class Mode(Enum):
@@ -49,32 +40,36 @@ class Mode(Enum):
 class Script(object):
 
     REGEX = re.compile(
-        r'(?P<prefix>.*?)"""(?P<docstr>.*?""")(?P<suffix>.*)', re.DOTALL)
+        r'(?P<prefix>.*?)[r]?"""(?P<docstr>.*?""")(?P<suffix>.*)', re.DOTALL)
 
-    instances = {}
+    TEST_MODE = False
 
     def __init__(self, path):
         self.path = path
-        self.original_lines_list = None
-        self.mismatches = {}
+        self._lines = None
+        self.updates = {}
 
-    @classmethod
-    def add_instance(cls, path):
-        cls.instances[path] = cls(path)
+    @staticmethod
+    def showpath(path):
+        retval = os.path.relpath(path, os.getcwd())
+        if path.startswith('..'):
+            retval = path
+        return retval
 
-    def add_mismatch(self, baseline):
-        self.mismatches[baseline.z__linenum] = baseline.z__update
+    def add_update(self, linenum, update):
+        self.updates[linenum] = update
 
     @property
-    def original_lines(self):
-        if self.original_lines_list is None:
+    def lines(self):
+        if self._lines is None:
             with open(self.path, 'r') as fh:
-                self.original_lines_list = fh.read().split('\n')
+                self._lines = fh.read().split('\n')
 
-        return self.original_lines_list
+        return self._lines
     
     def replace_lines(self, linenum, update):
-        lines = self.original_lines
+        # use property to access lines to read them from file if necessary
+        lines = self.lines
 
         count = 0
         for index in xrange(linenum - 1, -1, -1):
@@ -85,7 +80,7 @@ class Script(object):
         else:
             docstr_not_found = (
                 '{}:{}: could not find baseline docstring'
-                ''.format(show_path(self.path), linenum))
+                ''.format(self.showpath(self.path), linenum))
             raise RuntimeError(docstr_not_found)
 
         old_content = '\n'.join(lines[linenum:])
@@ -103,9 +98,10 @@ class Script(object):
         lines[linenum:] = new_content.split('\n')
 
     def update(self):
-        for linenum in reversed(sorted(self.mismatches)):
-            self.replace_lines(linenum, self.mismatches[linenum])
-        print "UPDATED:", showpath(self.path)
-        path = self.path.replace('.py', '.update.py')
-        with open(path, 'w') as fh:
-            fh.write('\n'.join(self.original_lines))
+        for linenum in reversed(sorted(self.updates)):
+            self.replace_lines(linenum, self.updates[linenum])
+        if not self.TEST_MODE:
+            path = '{}.update{}'.format(*os.path.splitext(self.path))
+            with open(path, 'w') as fh:
+                fh.write('\n'.join(self.lines))
+            print('UPDATE: {}'.format(self.showpath(path)))
