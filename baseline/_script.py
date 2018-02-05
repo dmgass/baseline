@@ -36,7 +36,10 @@ class Mode(Enum):
     OVERWRITE = 1
     """Overwrite script with updates."""
 
+
 DELIMITER_EXPRESSION = '"""' + '|' "'''"
+
+
 class Script(object):
 
     REGEX = re.compile(
