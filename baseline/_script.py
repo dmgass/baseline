@@ -36,11 +36,18 @@ class Mode(Enum):
     OVERWRITE = 1
     """Overwrite script with updates."""
 
-
+DELIMITER_EXPRESSION = '"""' + '|' "'''"
 class Script(object):
 
     REGEX = re.compile(
-        r'(?P<prefix>.*?)[r]?"""(?P<docstr>.*?""")(?P<suffix>.*)', re.DOTALL)
+        '(?P<prefix>.*?)'
+        '[r]?(?P<delim>{})'
+        '(?P<docstr>.*?)'
+        '(?P=delim)'
+        '(?P<suffix>.*)'.format(DELIMITER_EXPRESSION),
+        re.DOTALL)
+
+    # print(REGEX.pattern)  # TODO - remove
 
     TEST_MODE = False
 
@@ -72,8 +79,22 @@ class Script(object):
         lines = self.lines
 
         count = 0
+        delimiter = None
         for index in xrange(linenum - 1, -1, -1):
-            count += lines[index].count('"""')
+            line = lines[index]
+            if delimiter is None:
+                single_quote_index = line.rfind("'''")
+                double_quote_index = line.rfind('"""')
+                if double_quote_index >= 0:
+                    if double_quote_index > single_quote_index:
+                        delimiter = '"""'
+                    else:
+                        delimiter = "'''"
+                elif single_quote_index >= 0:
+                    delimiter = "'''"
+                else:
+                    continue
+            count += lines[index].count(delimiter)
             if count >= 2:
                 linenum = index
                 break
@@ -92,8 +113,11 @@ class Script(object):
                 '{}:{}: could not find docstring'.format(self.path, linenum))
             raise RuntimeError(docstr_not_found)
 
-        new_content = '{}r"""{}"""{}'.format(
-            match.group('prefix'), update, match.group('suffix'))
+        delimiter = "'''" if '"""' in update else '"""'
+        new_content = (
+            match.group('prefix') +
+            'r' + delimiter + update + delimiter +
+            match.group('suffix'))
 
         lines[linenum:] = new_content.split('\n')
 

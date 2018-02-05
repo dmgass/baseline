@@ -6,7 +6,7 @@ LONG_DESCRIPTION = """
 setup(
     name='baseline',
     version='0.1.0',
-    description='Ease maintenance baselined text.',
+    description='Ease maintenance of baselined text.',
     long_description=LONG_DESCRIPTION,
     classifiers=[
     'Development Status :: 3 - Alpha',
