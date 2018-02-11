@@ -69,13 +69,32 @@ class Baseline(str):
         return instance
 
     def __eq__(self, text):
+
         # don't baseline trailing whitespace to avoid pylint complaints
         text = '\n'.join(line.rstrip() for line in text.split('\n'))
+
+        triple_single_quote = (text[-1] == '"') or ('"""' in text)
+
+        if triple_single_quote and "'''" in text:
+            text = text.replace("'''", r"' ''")
+        else:
+            text = text.replace('"""', r'" ""')
+
+        if text[-1] == '\\' and text[-2:] != r'\\':
+            text += ' '
+
+        text = ''.join(
+            (r if len(r) == 3 else c) for c, r in [(c, repr(c)[1:-1]) for c in text])
 
         is_equal = super(Baseline, self).__eq__(text)
 
         if not is_equal:
-            self._updates.add(text)
+            quotes = "'''" if triple_single_quote else '"""'
+            if '\n' in text:
+                update = 'r' + quotes + '\n' + text + '\n' + quotes
+            else:
+                update = 'r' + quotes + text + quotes
+            self._updates.add(update)
             Baseline.z__unequal_baselines.add(self)
             if not Baseline.z__registered_atexit:
                 Baseline.z__registered_atexit = True
@@ -89,12 +108,13 @@ class Baseline(str):
 
     @property
     def z__update(self):
-        update = SEPARATOR.join(self._updates)
+        # sort updates so Python has seed has no impact on regression test
+        update = SEPARATOR.join(sorted(self._updates))
         indent = ' ' * self._indent
         lines = [(indent + line).rstrip() for line in update.split('\n')]
         if len(lines) > 1:
-            lines = [''] + lines + [indent]
-        return '\n'.join(lines)
+            lines = [''] + lines
+        return '\n'.join(lines).lstrip()
 
     @staticmethod
     def z__atexit_callback():

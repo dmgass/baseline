@@ -109,17 +109,18 @@ class Test1(TestCase):
         self.assertNotEqual(singleline.global_baseline, 'Global+')
         self.assertNotEqual(singleline.global_baseline, 'Global++')
         new_str = '\n'.join([
-            'r"""',
-            'Global+',
+            'r"""Global+"""',
             SEPARATOR.strip(),
-            'Global++',
-            '"""',
+            'r"""Global++"""',
         ])
 
         expected_updates = {
             single_key: singleline.FILE_TEXT.replace('"""Global"""', new_str),
         }
         self.check_updated_files(expected_updates)
+
+    def test_special_characters(self):
+        pass
 
 
 if __name__ == '__main__':

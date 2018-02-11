@@ -116,11 +116,7 @@ class Script(object):
                 '{}:{}: could not find docstring'.format(self.path, linenum))
             raise RuntimeError(docstr_not_found)
 
-        delimiter = "'''" if '"""' in update else '"""'
-        new_content = (
-            match.group('prefix') +
-            'r' + delimiter + update + delimiter +
-            match.group('suffix'))
+        new_content = match.group('prefix') + update + match.group('suffix')
 
         lines[linenum:] = new_content.split('\n')
 
