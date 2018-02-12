@@ -44,7 +44,7 @@ class Script(object):
 
     REGEX = re.compile(
         '(?P<prefix>.*?)'
-        '[r]?(?P<delim>{})'
+        '[rR]?(?P<delim>{})'
         '(?P<docstr>.*?)'
         '(?P=delim)'
         '(?P<suffix>.*)'.format(DELIMITER_EXPRESSION),

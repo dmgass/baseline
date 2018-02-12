@@ -7,6 +7,16 @@ from _script import Script
 SEPARATOR = '\n' + '*' * 40 + '\n'
 
 
+def psuedo_repr(text, special_chars):
+    try:
+        char = special_chars.pop(0)
+    except IndexError:
+        text = repr(text)[1:-1]
+    else:
+        text = char.join(psuedo_repr(chunk, special_chars) for chunk in text.split(char))
+    return text
+
+
 class Baseline(str):
 
     z__unequal_baselines = set()
@@ -54,8 +64,9 @@ class Baseline(str):
         try:
             instance = cls._all_instances[key]
         except KeyError:
-            indent, text = cls._dedent(text)
-            instance = super(Baseline, cls).__new__(cls, text)
+            indent, dedented_text = cls._dedent(text)
+            instance = super(Baseline, cls).__new__(cls, dedented_text)
+            instance.z__dedented_text = dedented_text
             instance.z__raw_text = text
             instance.z__path = path
             instance.z__linenum = linenum
@@ -63,7 +74,7 @@ class Baseline(str):
             instance._updates = set()
             cls._all_instances[key] = instance
         else:
-            if text != instance.z__raw_text:
+            if text != instance.z__dedented_text:
                 raise RuntimeError('varying baseline text not allowed')
 
         return instance
@@ -71,36 +82,42 @@ class Baseline(str):
     def __eq__(self, text):
 
         # don't baseline trailing whitespace to avoid pylint complaints
-        text = '\n'.join(line.rstrip() for line in text.split('\n'))
+        text = '\n'.join(line.rstrip(' ') for line in text.split('\n'))
 
-        triple_single_quote = (text[-1] == '"') or ('"""' in text)
+        # show representations of special characters (except leave newlines
+        # be since using triple quoting, don't escape quote marks, and don't
+        # escape backslashes since using raw strings)
+        text = psuedo_repr(text, ['\n', '"', '\\'])
 
-        if triple_single_quote and "'''" in text:
-            text = text.replace("'''", r"' ''")
+        # prefer to use triple double quote, but switch over to using triple
+        # single quote to avoid syntax errors when necessary
+        quotes = '"""'
+        if quotes in text:
+            quotes = "'''"
+            # handle case where triple double quote and triple single quote in text
+            text = text.replace(quotes, r"\'\'\'")
+
+        if ('\n' in text) or text.endswith('\\') or text.endswith(quotes[0]):
+            update = 'r' + quotes + '\n' + text + '\n' + quotes
         else:
-            text = text.replace('"""', r'" ""')
+            update = 'r' + quotes + text + quotes
 
-        if text[-1] == '\\' and text[-2:] != r'\\':
-            text += ' '
-
-        text = ''.join(
-            (r if len(r) == 3 else c) for c, r in [(c, repr(c)[1:-1]) for c in text])
+        self._updates.add(update)
 
         is_equal = super(Baseline, self).__eq__(text)
 
         if not is_equal:
-            quotes = "'''" if triple_single_quote else '"""'
-            if '\n' in text:
-                update = 'r' + quotes + '\n' + text + '\n' + quotes
-            else:
-                update = 'r' + quotes + text + quotes
-            self._updates.add(update)
             Baseline.z__unequal_baselines.add(self)
+
             if not Baseline.z__registered_atexit:
                 Baseline.z__registered_atexit = True
                 atexit.register(Baseline.z__atexit_callback)
 
         return is_equal
+
+    def __hash__(self):
+        # TODO research why adding self to a set invokes __eq__ without this
+        return id(self)
 
     def __ne__(self, text):
         # for use with assertNotEqual( ) for internal regression test purposes
@@ -109,7 +126,7 @@ class Baseline(str):
     @property
     def z__update(self):
         # sort updates so Python has seed has no impact on regression test
-        update = SEPARATOR.join(sorted(self._updates))
+        update = '\n'.join(sorted(self._updates))
         indent = ' ' * self._indent
         lines = [(indent + line).rstrip() for line in update.split('\n')]
         if len(lines) > 1:
