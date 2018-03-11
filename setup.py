@@ -23,7 +23,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     test_suite='nose.collector',
-    tests_require=['nose'],
+    tests_require=['mock', 'nose'],
     entry_points={
         'console_scripts': ['baseline=baseline.__main__:main'],
     }
