@@ -43,16 +43,9 @@ DELIMITER_EXPRESSION = '"""' + '|' "'''"
 
 class Script(object):
 
-    REGEX = re.compile(
-        '(?P<prefix>.*?)'
-        '[rR]?(?P<delim>{})'
-        '(?P<docstr>.*?)'
-        '(?P=delim)'
-        '(?P<suffix>.*)'.format(DELIMITER_EXPRESSION),
-        re.DOTALL)
+    """Python script updater."""
 
-    # print(REGEX.pattern)  # TODO - remove
-
+    # for regression test purposes (suppresses console output and file writes)
     TEST_MODE = False
 
     def __init__(self, path):
@@ -62,29 +55,61 @@ class Script(object):
 
     @staticmethod
     def showpath(path):
+        """Return path in form most convenient for user to read.
+
+        Return relative path when input path is within the current working
+        directory, otherwise return same (absolute) path passed in.
+
+        :param str path: file system path
+        :returns: file system path
+        :rtype: str
+
+        """
         retval = os.path.relpath(path, os.getcwd())
         if path.startswith('..'):
             retval = path
         return retval
 
     def add_update(self, linenum, update):
+        """Register baseline representation replacement text.
+
+        :param int linenum: location of baseline representation
+        :param str update: replacement representation (including delimeters)
+
+        """
         self.updates[linenum] = update
 
     @property
     def lines(self):
+        """List of file lines."""
         if self._lines is None:
             with open(self.path, 'r') as fh:
                 self._lines = fh.read().split('\n')
 
         return self._lines
     
-    def replace_lines(self, linenum, update):
+    # used to replace baseline string representation
+    REGEX = re.compile(
+        '(?P<prefix>.*?)'  # stuff to retain before string representation
+        '[rR]?(?P<delim>{})'  # multi-line string beginning delimeter
+        '(?P<docstr>.*?)'  # current representation
+        '(?P=delim)'  # multi-line string ending delimeter
+        '(?P<suffix>.*)'.format(DELIMITER_EXPRESSION),  # stuff to retain after
+        re.DOTALL)
+
+    def replace_baseline_repr(self, linenum, update):
+        """Replace individual baseline representation.
+
+        :param int linenum: location of baseline representation
+        :param str update: new baseline representation text (with delimiters)
+
+        """
         # use property to access lines to read them from file if necessary
         lines = self.lines
 
         count = 0
         delimiter = None
-        for index in xrange(linenum - 1, -1, -1):
+        for index in range(linenum - 1, -1, -1):
             line = lines[index]
             if delimiter is None:
                 single_quote_index = line.rfind("'''")
@@ -122,8 +147,15 @@ class Script(object):
         lines[linenum:] = new_content.split('\n')
 
     def update(self):
+        """Replace baseline representations previously registered for update.
+
+        :param int linenum: location of baseline representation
+        :param str update: new baseline representation text (with delimiters)
+
+        """
         for linenum in reversed(sorted(self.updates)):
-            self.replace_lines(linenum, self.updates[linenum])
+            self.replace_baseline_repr(linenum, self.updates[linenum])
+
         if not self.TEST_MODE:
             path = '{}.update{}'.format(*os.path.splitext(self.path))
             with open(path, 'w') as fh:

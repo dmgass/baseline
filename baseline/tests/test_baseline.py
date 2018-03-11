@@ -147,7 +147,9 @@ class VaryingCompares(BaseTestCase):
         self.check_updated_files(expected_updates)
 
     # TODO - add test case to check multiple compares to same baseline w/ varying text
-
+    # TODO - add test cases to exercise VaueErrors for multiline baselines
+    # TODO - test STRIP_TRAILING_WHITESPACE
+    # TODO - add test case to go from multi-line with indent to single line
 
 class RawStringDesignator(BaseTestCase):
 

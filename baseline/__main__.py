@@ -29,9 +29,20 @@ from glob import glob
 
 UPDATE_EXT = '.update.py'
 
+if sys.version_info.major >= 3:
+    console_input = input
+else:
+    console_input = raw_input
+
 
 def main(args=None):
+    """Command line interface.
 
+    :param list args: command line options (defaults to sys.argv)
+    :returns: exit code
+    :rtype: int
+
+    """
     parser = ArgumentParser(
         prog='baseline',
         description='Overwrite script with baseline update.')
@@ -59,12 +70,13 @@ def main(args=None):
                 paths += [os.path.join(root, filename) for filename in files]
     else:
         for dirpath in [p for p in paths if os.path.isdir(p)]:
-            paths += [os.path.join(dirpath, path) for path in os.listdir(dirpath)]
+            paths += [os.path.join(dirpath, pth) for pth in os.listdir(dirpath)]
 
-    update_paths = [os.path.abspath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
+    update_paths = [
+        os.path.abspath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
 
     if update_paths:
-        script_paths = [path[:-len(UPDATE_EXT)] + '.py'  for path in update_paths]
+        script_paths = [pth[:-len(UPDATE_EXT)] + '.py'  for pth in update_paths]
 
         print('Found updates for:')
         for path in script_paths:
@@ -72,7 +84,7 @@ def main(args=None):
         print('')
 
         try:
-            raw_input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
+            console_input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
         except KeyboardInterrupt:
             print('')
             print('Update canceled.')
@@ -85,7 +97,9 @@ def main(args=None):
                     script.write(new_content)
                 os.remove(update_path)
                 print(
-                    os.path.relpath(update_path) + ' -> ' + os.path.relpath(script_path))
+                    os.path.relpath(update_path) +
+                    ' -> ' +
+                    os.path.relpath(script_path))
 
     return 0
 
