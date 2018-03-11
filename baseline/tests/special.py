@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from baseline import Baseline
@@ -16,3 +18,4 @@ triple_single = Baseline(r"""SPECIAL [''']""")
 
 unprintable = Baseline(r"""SPECIAL [\x00]""")
 
+polish_hello_world = Baseline(r"""SPECIAL [Witaj świecie!]""")

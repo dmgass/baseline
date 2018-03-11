@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import io
 import os
 import re
 from enum import Enum
@@ -83,7 +84,7 @@ class Script(object):
     def lines(self):
         """List of file lines."""
         if self._lines is None:
-            with open(self.path, 'r') as fh:
+            with io.open(self.path, 'r', encoding='utf-8') as fh:
                 self._lines = fh.read().split('\n')
 
         return self._lines
@@ -158,6 +159,6 @@ class Script(object):
 
         if not self.TEST_MODE:
             path = '{}.update{}'.format(*os.path.splitext(self.path))
-            with open(path, 'w') as fh:
+            with io.open(path, 'w', encoding='utf-8') as fh:
                 fh.write('\n'.join(self.lines))
             print('UPDATE: {}'.format(self.showpath(path)))

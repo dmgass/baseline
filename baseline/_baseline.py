@@ -33,26 +33,24 @@ from ._script import Script
 SEPARATOR = '\n' + '*' * 40 + '\n'
 
 if sys.version_info.major >= 3:
-    INSIDE_STRING_DELIMETER_SLICE = slice(1, -1)
     baseclass = str
 else:
-    INSIDE_STRING_DELIMETER_SLICE = slice(2, -1)
     baseclass = unicode
 
 
 class Baseline(baseclass):
 
-    """Baselined string representation manager.
+    """Baselined string.
 
-    Support comparison of a string against a baselined representation of the
-    string. When the comparison results in a mismatch, update the baselined
-    representation in a copy of the Python script containing the baseline.
+    Support comparison of a string against a baseline. When the comparison
+    results in a mismatch, make a copy of the Python script containing the
+    baseline and modify the baseline to match the new value.
 
     """
-    STRIP_TRAILING_WHITESPACE = False
+    TRANSFORMS = []
 
     # set of instances of this class where a string comparison against the
-    # baselined representation was a mismatch
+    # baseline was a mismatch
     _baselines_to_update = set()
 
     # dictionary of every unique source code location of Baseline instantiation
@@ -60,20 +58,21 @@ class Baseline(baseclass):
     # value: Baseline instance for a particular location
     _all_instances = {}
 
-    # set of string representations of strings compared against this baseline
-    # (its an instance attribute, but for documentation and pylint purposes)
+    # set of strings compared against this baseline (all Baseline instances
+    # override this attribute with a set() specific to it, it is present as
+    # a class attribute for documentation and pylint warning suppression)
     _updates = None
 
     @staticmethod
     def _dedent(text):
         """Remove common indentation from each line in a text block.
 
-        When text block is a single line, return text block. Otherwise determine
-        common indentation from last line, strip common indentation from each
-        line, and return text block consisting of inner lines (don't include
-        first and last lines since they either empty or contain whitespace and
-        are present in baselined representations to make them pretty and
-        delineate the common indentation).
+        When text block is a single line, return text block. Otherwise
+        determine common indentation from last line, strip common
+        indentation from each line, and return text block consisting of
+        inner lines (don't include first and last lines since they either
+        empty or contain whitespace and are present in baselined
+        string to make them pretty and delineate the common indentation).
 
         :param str text: text block
         :returns: text block with common indentation removed
@@ -108,8 +107,8 @@ class Baseline(baseclass):
 
         Determine source code location (path/line) for every instance
         constructed and return same instance for every unique location.
-        Remove whitespace used to make the representation look pretty in
-        the source file (i.e. when multi-line, remove common indentation
+        Remove whitespace used to make the string look pretty in the
+        source file (i.e. when multi-line, remove common indentation
         as well as the first and last lines).
 
         :param str text: baselined string representation
@@ -147,39 +146,20 @@ class Baseline(baseclass):
 
         return instance
 
-    @classmethod
-    def _repr(cls, text, special_chars=('\n', '"', '\\')):
-        # convert text string into a baseline representation but since the
-        # representation will be encapsulated in a "raw" triple quoted string,
-        # leave newlines, quotes, and backslashes as is.
-        try:
-            char = special_chars[0]
-        except IndexError:
-            text = repr(text)[INSIDE_STRING_DELIMETER_SLICE]
-        else:
-            text = char.join(
-                cls._repr(s, special_chars[1:]) for s in text.split(char))
-
-        return text
-
     def __eq__(self, text):
-        """Make representation and compare it against baselined representation.
+        """Compare string against baseline.
 
-        Save a copy of the representation in order to later update the
-        representation in the source code file in the event any comparison
-        against this baseline fails.
+        Save a copy of the string in order to later update the string
+        in the source code file in the event any comparison against
+        this baseline fails.
 
-        :param str text: string to compare against baselined representation
-        :returns: indication if string representation matches baseline
+        :param str text: string to compare against baseline
+        :returns: indication if string matches baseline
         :rtype: bool
 
         """
-        if self.STRIP_TRAILING_WHITESPACE:
-            # don't baseline trailing whitespace to avoid pylint complaints
-            text = '\n'.join(line.rstrip(' ') for line in text.split('\n'))
-
-        # convert to a representation to compare against baseline
-        text = self._repr(text)
+        for transform in self.TRANSFORMS:
+            text = transform(text)
 
         # use triple double quote, except use triple single quote when
         # triple double quote is present to avoid syntax errors
@@ -189,11 +169,11 @@ class Baseline(baseclass):
             # handle when both triple double and triple single quotes present
             text = text.replace(quotes, r"\'\'\'")
 
-        # Save a copy of the representation in order to later update the
-        # representation in the source code file in the event any comparison
-        # against this baseline fails. Wrap with blank lines when multi-line
-        # or when text ends with characters that would otherwise result in a
-        # syntax error in the formatted representation.
+        # Save a copy of the string in order to later update the string
+        # in the source code file in the event any comparison against
+        # this baseline fails. Wrap with blank lines when multi-line or
+        # when text ends with characters that would otherwise result in
+        # a syntax error in the formatted representation.
         multiline = self._indent or ('\n' in text)
         if multiline or text.endswith('\\') or text.endswith(quotes[0]):
             self._updates.add('r' + quotes + '\n' + text + '\n' + quotes)
@@ -212,7 +192,7 @@ class Baseline(baseclass):
 
     def __ne__(self, text):
         # not necessary for Python 3 or greater, but override for Python 2
-        # for use with assertNotEqual( ) for internal regression test purposes
+        # for use in regression test where assertNotEqual() is used
         return not (self == text)
 
     def __hash__(self):
@@ -226,9 +206,8 @@ class Baseline(baseclass):
     def z__update(self):
         """Triple quoted baseline representation.
 
-        Return string with multiple triple quoted baseline representations when
-        baseline had been compared multiple times against varying string
-        representations.
+        Return string with multiple triple quoted baseline strings when
+        baseline had been compared multiple times against varying strings.
 
         :returns: source file baseline replacement text
         :rtype: str
@@ -245,6 +224,18 @@ class Baseline(baseclass):
 
     @classmethod
     def _atexit_callback(cls):
+        """Create Python script copies with updated baselines.
+
+        For any baseline that had a miscompare, make a copy of the
+        source file which contained the baseline and update the
+        baseline with the new string value.
+
+        :returns:
+            record of every Python file update (key=path,
+            value=script instance)
+        :rtype: dict
+
+        """
         updated_scripts = {}
 
         for baseline in cls._baselines_to_update:

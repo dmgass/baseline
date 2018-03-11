@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Copyright 2018 Daniel Mark Gass
 #
@@ -25,23 +26,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import atexit
 import difflib
 import importlib
+import io
 import os
 import sys
 from unittest import TestCase, main
+
+import baseline
+
+from baseline import Baseline, ascii_repr
 
 if sys.version_info.major >= 3:
     from unittest.mock import Mock
 else:
     from mock import Mock
 
-import baseline
-from baseline import Baseline
-
 SEP = '\n' + getattr(baseline, '_baseline').SEPARATOR + '\n'
 Script = getattr(baseline, '_script').Script
-
-# from .._script import SEPARATOR, Script
-# SEP = '\n' + SEPARATOR + '\n'
 
 
 # suppress file writes
@@ -85,7 +85,7 @@ class BaseTestCase(TestCase):
 
         for path, module in path_to_module.items():
             actual = '\n'.join(updated_scripts[path].lines)
-            with open(path) as handle:
+            with io.open(path, 'r', encoding='utf-8') as handle:
                 expect = handle.read()
 
             for pattern, replacement in module_ops[module]:
@@ -230,26 +230,29 @@ class SpecialCharacters(BaseTestCase):
     triple_double = 'SPECIAL ["""]'
     triple_single = "SPECIAL [''']"
     unprintable = 'SPECIAL [{}]'.format(chr(0))
+    polish_hello_world = 'SPECIAL [Witaj świecie!]'
 
     def test_compare(self):
         self.assertEqual(special.double_quote, self.double_quote)
         self.assertEqual(special.backslash, self.backslash)
-        self.assertEqual(special.tab, self.tab)
+        self.assertEqual(special.tab, ascii_repr(self.tab))
         self.assertEqual(special.triple_both, self.triple_both)
         self.assertEqual(special.triple_double, self.triple_double)
         self.assertEqual(special.triple_single, self.triple_single)
-        self.assertEqual(special.unprintable, self.unprintable)
+        self.assertEqual(special.unprintable, ascii_repr(self.unprintable))
+        self.assertEqual(special.polish_hello_world, self.polish_hello_world)
 
         self.check_updated_files()
 
     def test_update(self):
         self.assertNotEqual(special.double_quote, self.double_quote.replace('S', '+S'))
         self.assertNotEqual(special.backslash, self.backslash.replace('S', '+S'))
-        self.assertNotEqual(special.tab, self.tab.replace('S', '+S'))
+        self.assertNotEqual(special.tab, ascii_repr(self.tab.replace('S', '+S')))
         self.assertNotEqual(special.triple_both, self.triple_both.replace('S', '+S'))
         self.assertNotEqual(special.triple_double, self.triple_double.replace('S', '+S'))
         self.assertNotEqual(special.triple_single, self.triple_single.replace('S', '+S'))
-        self.assertNotEqual(special.unprintable, self.unprintable.replace('S', '+S'))
+        self.assertNotEqual(special.unprintable, ascii_repr(self.unprintable.replace('S', '+S')))
+        self.assertNotEqual(special.polish_hello_world, self.polish_hello_world.replace('S', '+S'))
 
         self.check_updated_files({special: [('SPECIAL', '+SPECIAL')]})
 
