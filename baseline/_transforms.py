@@ -80,4 +80,4 @@ def rstrip(text):
     :rtype: str
 
     """
-    return '\n'.join(line.rstrip(' ') for line in text.split('\n'))
+    return '\n'.join(line.rstrip() for line in text.split('\n'))

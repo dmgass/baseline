@@ -33,7 +33,7 @@ from unittest import TestCase, main
 
 import baseline
 
-from baseline import Baseline, ascii_repr
+from baseline import Baseline, ascii_repr, rstrip
 
 if sys.version_info.major >= 3:
     from unittest.mock import Mock
@@ -47,11 +47,13 @@ Script = getattr(baseline, '_script').Script
 # suppress file writes
 Script.TEST_MODE = True
 
+ascii = importlib.import_module('ascii')
 endswith = importlib.import_module('endswith')
 indents = importlib.import_module('indents')
 raw = importlib.import_module('raw')
 simple = importlib.import_module('simple')
 special = importlib.import_module('special')
+stripped = importlib.import_module('stripped')
 whitespace = importlib.import_module('whitespace')
 
 
@@ -171,8 +173,20 @@ class BaselineSingleton(BaseTestCase):
         self.check_updated_files()
 
 
-# TODO - test AsciiBaseline
-# TODO - test StrippedBaseline
+class Stripped(BaseTestCase):
+
+    def test_baseline(self):
+        self.assertEqual(stripped.single, 'SINGLE ')
+        self.assertEqual(stripped.multiple, 'LINE 1 \nLINE 2\t\n    LINE 3 \t')
+
+        self.check_updated_files()
+
+    def test_transform(self):
+        stimulus = 'LINE 1 \nLINE 2\t\n    LINE 3 \t'
+        expected = 'LINE 1\nLINE 2\n    LINE 3'
+        self.assertEqual(rstrip(stimulus), expected)
+
+
 # TODO - add test case to go from multi-line with indent to single line
 
 class IllegalBaselines(BaseTestCase):
@@ -311,13 +325,33 @@ class SpecialCharacters(BaseTestCase):
         self.check_updated_files({special: [('SPECIAL', '+SPECIAL')]})
 
 
+class Ascii(SpecialCharacters):
+
+    def test_baseline(self):
+        self.assertEqual(ascii.double_quote, self.double_quote)
+        self.assertEqual(ascii.backslash, self.backslash)
+        self.assertEqual(ascii.tab, self.tab)
+        self.assertEqual(ascii.unprintable, self.unprintable)
+        self.assertEqual(ascii.polish_hello_world, self.polish_hello_world)
+
+        self.check_updated_files()
+
+    def test_transform(self):
+        stimulus = """
+            \t 'Hello World!' == "Witaj świecie!" """
+        expected = """
+            \\t 'Hello World!' == "Witaj \\u015bwiecie!" """
+        #actual = ascii_repr(stimulus)
+        #for a, b in zip(actual, expected):
+        #    print("A={!r}, B={!r}, R={}".format(a, b, a==b))
+        self.assertEqual(ascii_repr(stimulus), expected)
+
+
 class WhiteSpace(BaseTestCase):
 
     def test_compare(self):
         self.assertEqual(whitespace.single, 'WHITESPACE')
-        # self.assertEqual(whitespace.single, 'WHITESPACE ')
         self.assertEqual(whitespace.multiple, 'WHITESPACE\n\n')
-        # self.assertEqual(whitespace.multiple, 'WHITESPACE\n  \n  ')
 
         self.check_updated_files()
 
