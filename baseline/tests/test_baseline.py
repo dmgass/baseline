@@ -130,26 +130,80 @@ class NormalUse(BaseTestCase):
         self.check_updated_files(expected_updates)
 
 
-class VaryingCompares(BaseTestCase):
+class MultipleCompares(BaseTestCase):
 
-    def test_no_newline(self):
+    def test_two_dissimiliar(self):
         single_updates = ['SINGLE', 'SINGLE+']
 
         self.assertEqual(simple.single, single_updates[0])
         self.assertNotEqual(simple.single, single_updates[1])
 
         expected_updates = {
-            simple:  [
-                ('SINGLE', '"""\nr"""'.join(single_updates))],
-            # multi_key: multiline.FILE_TEXT.replace('Global', 'Global+'),
+            simple:  [('SINGLE', '"""\nr"""'.join(single_updates))],
         }
 
         self.check_updated_files(expected_updates)
 
-    # TODO - add test case to check multiple compares to same baseline w/ varying text
-    # TODO - add test cases to exercise VaueErrors for multiline baselines
-    # TODO - test STRIP_TRAILING_WHITESPACE
-    # TODO - add test case to go from multi-line with indent to single line
+    def test_two_same(self):
+        self.assertEqual(simple.single, 'SINGLE')
+        self.assertEqual(simple.single, 'SINGLE')
+
+        self.check_updated_files()
+
+class BaselineSingleton(BaseTestCase):
+
+    def test_same_value(self):
+
+        sample_text = "Hello world!"
+        baseline1, baseline2 = Baseline(sample_text), Baseline(sample_text)
+
+        self.assertEqual(baseline1, sample_text)
+        self.assertEqual(baseline2, sample_text)
+        self.assertIs(baseline1, baseline2)
+
+        self.check_updated_files()
+
+    def test_diff_value(self):
+
+        with self.assertRaises(RuntimeError):
+            Baseline('junk1'), Baseline('junk2')
+
+        self.check_updated_files()
+
+
+# TODO - test AsciiBaseline
+# TODO - test StrippedBaseline
+# TODO - add test case to go from multi-line with indent to single line
+
+class IllegalBaselines(BaseTestCase):
+
+    def test_nonblank_first_line(self):
+
+        with self.assertRaises(ValueError):
+            Baseline("""not blank!
+                normal
+                """)
+
+        self.check_updated_files()
+
+    def test_nonblank_last_line(self):
+
+        with self.assertRaises(ValueError):
+            Baseline("""
+                normal
+                not blank!""")
+
+        self.check_updated_files()
+
+    def test_too_little_indent(self):
+
+        with self.assertRaises(ValueError):
+            Baseline("""
+                not indented enough
+                    """)
+
+        self.check_updated_files()
+
 
 class RawStringDesignator(BaseTestCase):
 

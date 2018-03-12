@@ -111,7 +111,8 @@ class Baseline(baseclass):
         source file (i.e. when multi-line, remove common indentation
         as well as the first and last lines).
 
-        :param str text: baselined string representation
+        :param text: baselined string representation
+        :type text: str or unicode
         :returns: normalized string representation
         :raises RuntimeError: when text differs for a specific location
 
