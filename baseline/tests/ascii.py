@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# must avoid use of "from __future__ import unicode_literals" when using ASCII
+# avoid use of "from __future__ import unicode_literals" when using ASCII,
+# otherwise even with r"..." designation the \u0000 is encoded into a character
 from __future__ import absolute_import, division, print_function
 
 from baseline import AsciiBaseline

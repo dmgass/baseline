@@ -152,6 +152,7 @@ class MultipleCompares(BaseTestCase):
 
         self.check_updated_files()
 
+
 class BaselineSingleton(BaseTestCase):
 
     def test_same_value(self):
@@ -186,8 +187,6 @@ class Stripped(BaseTestCase):
         expected = 'LINE 1\nLINE 2\n    LINE 3'
         self.assertEqual(rstrip(stimulus), expected)
 
-
-# TODO - add test case to go from multi-line with indent to single line
 
 class IllegalBaselines(BaseTestCase):
 
@@ -289,6 +288,16 @@ class Indents(BaseTestCase):
         self.check_updated_files({indents: [('line=', 'line+=')]})
 
 
+class FormatSticks(BaseTestCase):
+
+    def test_update(self):
+        self.assertNotEqual(simple.multiple, 'single')
+
+        old = '\n'.join('    ' + line for line in simple.multiple.split('\n'))
+
+        self.check_updated_files({simple: [(old.strip(), 'single')]})
+
+
 class SpecialCharacters(BaseTestCase):
 
     double_quote = 'SPECIAL ["]'
@@ -341,9 +350,6 @@ class Ascii(SpecialCharacters):
             \t 'Hello World!' == "Witaj świecie!" """
         expected = """
             \\t 'Hello World!' == "Witaj \\u015bwiecie!" """
-        #actual = ascii_repr(stimulus)
-        #for a, b in zip(actual, expected):
-        #    print("A={!r}, B={!r}, R={}".format(a, b, a==b))
         self.assertEqual(ascii_repr(stimulus), expected)
 
 
