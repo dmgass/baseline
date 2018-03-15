@@ -76,7 +76,7 @@ def main(args=None):
         os.path.abspath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
 
     if update_paths:
-        script_paths = [pth[:-len(UPDATE_EXT)] + '.py'  for pth in update_paths]
+        script_paths = [pth[:-len(UPDATE_EXT)] + '.py' for pth in update_paths]
 
         print('Found updates for:')
         for path in script_paths:

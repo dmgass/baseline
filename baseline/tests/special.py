@@ -4,18 +4,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from baseline import Baseline
 
-double_quote = Baseline(r"""SPECIAL ["]""")
+double_quote = Baseline("""SPECIAL ["]""")
 
 backslash = Baseline(r"""SPECIAL [\]""")
 
-tab = Baseline(r"""SPECIAL [\t]""")
+tab = Baseline("""SPECIAL [\t]""")
 
-triple_both = Baseline(r'''SPECIAL [\'\'\'],["""]''')
+triple_double = Baseline('''SPECIAL ["""]''')
 
-triple_double = Baseline(r'''SPECIAL ["""]''')
+triple_single = Baseline("""SPECIAL [''']""")
 
-triple_single = Baseline(r"""SPECIAL [''']""")
+unprintable = Baseline("""SPECIAL [\x00]""")
 
-unprintable = Baseline(r"""SPECIAL [\x00]""")
-
-polish_hello_world = Baseline(r"""SPECIAL [Witaj świecie!]""")
+polish_hello_world = Baseline("""SPECIAL [Witaj świecie!]""")

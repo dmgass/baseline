@@ -34,8 +34,43 @@ SEPARATOR = '\n' + '*' * 40 + '\n'
 
 if sys.version_info.major >= 3:
     baseclass = str
+    INSIDE_STRING_DELIMETER_SLICE = slice(1, -1)
 else:
     baseclass = unicode
+    INSIDE_STRING_DELIMETER_SLICE = slice(2, -1)
+
+
+RAW_MULTILINE_CHARS = ('\n', '"', '\\')
+
+
+def multiline_repr(text, special_chars=('\n', '"')):
+    """Get string representation for triple quoted context.
+
+    Make string representation as normal except do not transform
+    "special characters" into an escaped representation to support
+    use of the representation in a triple quoted multi-line string
+    context (to avoid escaping newlines and double quotes).
+
+     Pass ``RAW_MULTILINE_CHARS`` as the ``special_chars`` when use
+     context is a "raw" triple quoted string (to also avoid excaping
+     backslashes).
+
+    :param text: string
+    :type text: str or unicode
+    :param iterable special_chars: characters to remove/restore
+    :returns: representation
+    :rtype: str
+
+    """
+    try:
+        char = special_chars[0]
+    except IndexError:
+        text = repr(text)[INSIDE_STRING_DELIMETER_SLICE]
+    else:
+        text = char.join(
+            multiline_repr(s, special_chars[1:]) for s in text.split(char))
+
+    return text
 
 
 class Baseline(baseclass):
@@ -164,22 +199,15 @@ class Baseline(baseclass):
 
         # use triple double quote, except use triple single quote when
         # triple double quote is present to avoid syntax errors
-        quotes = '"""'
-        if quotes in text:
-            quotes = "'''"
-            # handle when both triple double and triple single quotes present
-            text = text.replace(quotes, r"\'\'\'")
+        if '"""' in text and "'''" in text:
+            raise ValueError(
+                'Both triple quote styles exist in string, '
+                'replace either """ or {} before baselining'.format("'''"))
 
         # Save a copy of the string in order to later update the string
         # in the source code file in the event any comparison against
-        # this baseline fails. Wrap with blank lines when multi-line or
-        # when text ends with characters that would otherwise result in
-        # a syntax error in the formatted representation.
-        multiline = self._indent or ('\n' in text)
-        if multiline or text.endswith('\\') or text.endswith(quotes[0]):
-            self._updates.add('r' + quotes + '\n' + text + '\n' + quotes)
-        else:
-            self._updates.add('r' + quotes + text + quotes)
+        # this baseline fails.
+        self._updates.add(text)
 
         is_equal = super(Baseline, self).__eq__(text)
 
@@ -214,8 +242,39 @@ class Baseline(baseclass):
         :rtype: str
 
         """
+        updates = []
+
+        for text in self._updates:
+
+            text_repr = multiline_repr(text, RAW_MULTILINE_CHARS)
+
+            if len(text_repr) == len(text) and '\\U' not in text.upper():
+                raw_char = 'r' if '\\' in text_repr else ''
+            else:
+                # must have special characters that required added backslash
+                # escaping, use normal representation to get backslashes right
+                raw_char = ''
+                text_repr = multiline_repr(text)
+
+            # use triple double quote, except use triple single quote when
+            # triple double quote is present to avoid syntax errors
+            quotes = '"""'
+            if quotes in text:
+                quotes = "'''"
+
+            # Wrap with blank lines when multi-line or when text ends with
+            # characters that would otherwise result in a syntax error in
+            # the formatted representation.
+            multiline = self._indent or ('\n' in text)
+            if multiline or text.endswith('\\') or text.endswith(quotes[0]):
+                update = raw_char + quotes + '\n' + text_repr + '\n' + quotes
+            else:
+                update = raw_char + quotes + text_repr + quotes
+
+            updates.append(update)
+
         # sort updates so Python hash seed has no impact on regression test
-        update = '\n'.join(sorted(self._updates))
+        update = '\n'.join(sorted(updates))
 
         indent = ' ' * self._indent
 

@@ -2,12 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from baseline import Baseline
 
-capital = Baseline(R"""CAPITAL""") # capital "R" replaced with lower
+lower = Baseline(r"""LOWER""")  # lower case "r" present
 
-single = Baseline("""SINGLE""") # left off "r" to test it is inserted
+upper = Baseline(R"""UPPER""")  # upper case "R" present
 
-multiple = Baseline(
-    '''
-    MULTIPLE
-    """"""""
-    ''')  # left off "r" to test it is inserted
+missing = Baseline("""MISSING""")  # no "raw" designator present

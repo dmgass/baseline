@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from baseline import StrippedBaseline
 
-single = StrippedBaseline(r"""SINGLE""")
+single = StrippedBaseline("""SINGLE""")
 
-multiple = StrippedBaseline(r"""
+multiple = StrippedBaseline("""
     LINE 1
     LINE 2
         LINE 3

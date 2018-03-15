@@ -22,54 +22,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-
-if sys.version_info.major >= 3:
-    INSIDE_STRING_DELIMETER_SLICE = slice(1, -1)
-else:
-    INSIDE_STRING_DELIMETER_SLICE = slice(2, -1)
-
-
-def ascii_repr(text):
-    r"""Create representation with escaped non-printable characters.
-
-    For example, transform the null character (ASCII code 0) into \x00.
-    Transform the tab character into \t. But leave newline characters
-    as is.
-
-    :param text: string
-    :type text: str or unicode
-    :returns: representation
-    :rtype: str or unicode
-
-    """
-    return _ascii_repr(text)
-
-
-def _ascii_repr(text, special_chars=('\n', '"', '\\')):
-    """ascii_repr() recursive helper.
-
-    Use repr() method to escape non-printable characters. Avoid escaping
-    newline, double quotes, and back slashes by removing them first then
-    restoring after.
-
-    :param text: string
-    :type text: str or unicode
-    :param iterable special_chars: characters to remove/restore
-    :returns: representation
-    :rtype: str
-
-    """
-    try:
-        char = special_chars[0]
-    except IndexError:
-        text = repr(text)[INSIDE_STRING_DELIMETER_SLICE]
-    else:
-        text = char.join(
-            _ascii_repr(s, special_chars[1:]) for s in text.split(char))
-
-    return text
-
 
 def rstrip(text):
     """Strip trailing whitespace from end of each line.

@@ -61,7 +61,8 @@ class Script(object):
         Return relative path when input path is within the current working
         directory, otherwise return same (absolute) path passed in.
 
-        :param str path: file system path
+        :param path: file system path
+        :type path: str or unicode
         :returns: file system path
         :rtype: str
 
@@ -148,12 +149,7 @@ class Script(object):
         lines[linenum:] = new_content.split('\n')
 
     def update(self):
-        """Replace baseline representations previously registered for update.
-
-        :param int linenum: location of baseline representation
-        :param str update: new baseline representation text (with delimiters)
-
-        """
+        """Replace baseline representations previously registered for update."""
         for linenum in reversed(sorted(self.updates)):
             self.replace_baseline_repr(linenum, self.updates[linenum])
 

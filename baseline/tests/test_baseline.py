@@ -33,7 +33,7 @@ from unittest import TestCase, main
 
 import baseline
 
-from baseline import Baseline, ascii_repr, rstrip
+from baseline import Baseline, rstrip
 
 if sys.version_info.major >= 3:
     from unittest.mock import Mock
@@ -47,7 +47,6 @@ Script = getattr(baseline, '_script').Script
 # suppress file writes
 Script.TEST_MODE = True
 
-ascii = importlib.import_module('ascii')
 endswith = importlib.import_module('endswith')
 indents = importlib.import_module('indents')
 raw = importlib.import_module('raw')
@@ -217,7 +216,7 @@ class MultipleCompares(BaseTestCase):
         self.assertNotEqual(simple.single, single_updates[1])
 
         expected_updates = {
-            simple:  [('SINGLE', '"""\nr"""'.join(single_updates))],
+            simple:  [('SINGLE', '"""\n"""'.join(single_updates))],
         }
 
         self.check_updated_files(expected_updates)
@@ -283,6 +282,19 @@ class IllegalBaselines(BaseTestCase):
 
     """Test illegal baseline value formats."""
 
+    def test_both_quote_styles_present(self):
+        """Verify exception when both triple quote styles present.
+
+         Check that exception is raised, that "atexit" registration
+         did not occur, and that no files were to be updated.
+
+        """
+        both_styles = Baseline('')
+        with self.assertRaises(ValueError):
+            self.assertNotEqual(both_styles, '"""' + "'''")
+
+        self.check_updated_files()
+
     def test_nonblank_first_line(self):
         """Verify exception when first line of baseline value is not blank.
 
@@ -328,20 +340,62 @@ class IllegalBaselines(BaseTestCase):
 
 class RawStringDesignator(BaseTestCase):
 
-    """Test "r" raw string designator added during an update."""
+    """Test "r" raw string designator added/removed during an update."""
 
-    def test_update(self):
-        """Test "r" raw string designator added during an update."""
-        self.assertNotEqual(raw.capital, 'CAPITAL+')
-        self.assertNotEqual(raw.single, 'SINGLE+')
-        self.assertNotEqual(raw.multiple, 'MULTIPLE+\n""""""""')
+    def test_adding(self):
+        """Test "r" raw string designator added as needed during an update."""
+        self.assertNotEqual(raw.lower, r'\ LOWER')
+        self.assertNotEqual(raw.upper, r'\ UPPER')
+        self.assertNotEqual(raw.missing, r'\ MISSING')
 
         expected_updates = {
             raw:  [
-                ('(R"""CAPITAL', '(r"""CAPITAL+'),
-                ('("""SINGLE', '(r"""SINGLE+'),
-                ("'''\n", "r'''\n"),
-                ("MULTIPLE", "MULTIPLE+")
+                ('(r"""LOWER', r'(r"""\ LOWER'),
+                ('(R"""UPPER', r'(r"""\ UPPER'),
+                ('("""MISSING', r'(r"""\ MISSING'),
+            ]}
+
+        self.check_updated_files(expected_updates)
+
+    def test_removal_when_u_escape(self):
+        """Test raw string designator removed when backlash "u" present."""
+        self.assertNotEqual(raw.lower, 'LOWER\\u')
+        self.assertNotEqual(raw.upper, 'UPPER\\U')
+
+        expected_updates = {
+            raw:  [
+                ('(r"""LOWER', '("""LOWER\\\\u'),
+                ('(R"""UPPER', '("""UPPER\\\\U'),
+            ]}
+
+        self.check_updated_files(expected_updates)
+
+    def test_removal_when_escaping(self):
+        """Test raw string designator removed when escaping needed."""
+        self.assertNotEqual(raw.lower, 'LOWER' + chr(0))
+        self.assertNotEqual(raw.upper, 'UPPER' + chr(1))
+        self.assertNotEqual(raw.missing, 'MISSING' + chr(2))
+
+        expected_updates = {
+            raw:  [
+                ('(r"""LOWER', r'("""LOWER\x00'),
+                ('(R"""UPPER', r'("""UPPER\x01'),
+                ('("""MISSING', r'("""MISSING\x02'),
+            ]}
+
+        self.check_updated_files(expected_updates)
+
+    def test_removal_when_normal_text(self):
+        """Test raw string designator removed when just normal text."""
+        self.assertNotEqual(raw.lower, 'LOWER+')
+        self.assertNotEqual(raw.upper, 'UPPER+')
+        self.assertNotEqual(raw.missing, 'MISSING+')
+
+        expected_updates = {
+            raw:  [
+                ('(r"""LOWER', '("""LOWER+'),
+                ('(R"""UPPER', '("""UPPER+'),
+                ('("""MISSING', '("""MISSING+'),
             ]}
 
         self.check_updated_files(expected_updates)
@@ -459,11 +513,10 @@ class SpecialCharacters(BaseTestCase):
         """
         self.assertEqual(special.double_quote, self.double_quote)
         self.assertEqual(special.backslash, self.backslash)
-        self.assertEqual(special.tab, ascii_repr(self.tab))
-        self.assertEqual(special.triple_both, self.triple_both)
+        self.assertEqual(special.tab, self.tab)
         self.assertEqual(special.triple_double, self.triple_double)
         self.assertEqual(special.triple_single, self.triple_single)
-        self.assertEqual(special.unprintable, ascii_repr(self.unprintable))
+        self.assertEqual(special.unprintable, self.unprintable)
         self.assertEqual(special.polish_hello_world, self.polish_hello_world)
 
         self.check_updated_files()
@@ -483,10 +536,7 @@ class SpecialCharacters(BaseTestCase):
             special.backslash, self.backslash.replace('S', '+S'))
 
         self.assertNotEqual(
-            special.tab, ascii_repr(self.tab.replace('S', '+S')))
-
-        self.assertNotEqual(
-            special.triple_both, self.triple_both.replace('S', '+S'))
+            special.tab, self.tab.replace('S', '+S'))
 
         self.assertNotEqual(
             special.triple_double, self.triple_double.replace('S', '+S'))
@@ -495,14 +545,19 @@ class SpecialCharacters(BaseTestCase):
             special.triple_single, self.triple_single.replace('S', '+S'))
 
         self.assertNotEqual(
-            special.unprintable,
-            ascii_repr(self.unprintable.replace('S', '+S')))
+            special.unprintable, self.unprintable.replace('S', '+S'))
 
         self.assertNotEqual(
             special.polish_hello_world,
             self.polish_hello_world.replace('S', '+S'))
 
-        self.check_updated_files({special: [('SPECIAL', '+SPECIAL')]})
+        # TODO - handle py3 and __future__ in py2 for international characters
+
+        self.check_updated_files({
+            special: [
+                ('SPECIAL', '+SPECIAL'),
+                ('świecie', '\\u015bwiecie')
+            ]})
 
 
 class WhiteSpace(BaseTestCase):
@@ -530,43 +585,6 @@ class WhiteSpace(BaseTestCase):
         self.assertNotEqual(whitespace.multiple, 'WHITESPACE+\n\n')
 
         self.check_updated_files({whitespace: [('WHITESPACE', 'WHITESPACE+')]})
-
-
-class Ascii(SpecialCharacters):
-
-    """Test ascii_repr() and associated AsciiBaseline() class.
-
-     Test that each converts non-printable characters into representations.
-
-    """
-    def test_baseline(self):
-        """Test AsciiBaseline() class.
-
-        Test that strings with non-printable characters are first
-        transformed to replace those characters with representations
-        and then are compared against the baseline.
-
-        """
-        self.assertEqual(ascii.double_quote, self.double_quote)
-        self.assertEqual(ascii.backslash, self.backslash)
-        self.assertEqual(ascii.tab, self.tab)
-        self.assertEqual(ascii.unprintable, self.unprintable)
-        self.assertEqual(ascii.polish_hello_world, self.polish_hello_world)
-
-        self.check_updated_files()
-
-    def test_transform(self):
-        """Test ascii_repr() transform function.
-
-        Test that strings passed in with non-printable characters are
-        transformed to replace those characters with representations.
-
-        """
-        stimulus = """
-            \t 'Hello World!' == "Witaj świecie!" """
-        expected = """
-            \\t 'Hello World!' == "Witaj \\u015bwiecie!" """
-        self.assertEqual(ascii_repr(stimulus), expected)
 
 
 class Stripped(BaseTestCase):
