@@ -84,6 +84,8 @@ class Baseline(baseclass):
     """
     TRANSFORMS = []
 
+    _AVOID_RAW_FORM = True
+
     # set of instances of this class where a string comparison against the
     # baseline was a mismatch
     _baselines_to_update = set()
@@ -246,15 +248,19 @@ class Baseline(baseclass):
 
         for text in self._updates:
 
-            text_repr = multiline_repr(text, RAW_MULTILINE_CHARS)
-
-            if len(text_repr) == len(text) and '\\U' not in text.upper():
-                raw_char = 'r' if '\\' in text_repr else ''
-            else:
-                # must have special characters that required added backslash
-                # escaping, use normal representation to get backslashes right
-                raw_char = ''
+            if self._AVOID_RAW_FORM:
                 text_repr = multiline_repr(text)
+                raw_char = ''
+            else:
+                text_repr = multiline_repr(text, RAW_MULTILINE_CHARS)
+
+                if len(text_repr) == len(text) and '\\U' not in text.upper():
+                    raw_char = 'r' if '\\' in text_repr else ''
+                else:
+                    # must have special characters that required added backslash
+                    # escaping, use normal representation to get backslashes right
+                    text_repr = multiline_repr(text)
+                    raw_char = ''
 
             # use triple double quote, except use triple single quote when
             # triple double quote is present to avoid syntax errors

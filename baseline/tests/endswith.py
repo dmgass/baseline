@@ -6,6 +6,6 @@ quote = Baseline("""
     ENDSWITH "
     """)
 
-backslash = Baseline(r"""
-    ENDSWITH \
+backslash = Baseline("""
+    ENDSWITH \\
     """)

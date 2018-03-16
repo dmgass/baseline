@@ -52,7 +52,6 @@ indents = importlib.import_module('indents')
 raw = importlib.import_module('raw')
 simple = importlib.import_module('simple')
 special = importlib.import_module('special')
-stripped = importlib.import_module('stripped')
 whitespace = importlib.import_module('whitespace')
 
 
@@ -589,25 +588,7 @@ class WhiteSpace(BaseTestCase):
 
 class Stripped(BaseTestCase):
 
-    """Test rstrip() and associated StrippedBaseline() class.
-
-     Test that each cleans whitespace at end of lines.
-
-    """
-
-    def test_baseline(self):
-        """Test StrippedBaseline() class.
-
-        Test that lines with whitespace at the end that are compared
-        against a baseline without the whitespace compare successfully,
-        that "atexit" registration did not occur, and that no files
-        were to be updated.
-
-        """
-        self.assertEqual(stripped.single, 'SINGLE ')
-        self.assertEqual(stripped.multiple, 'LINE 1 \nLINE 2\t\n    LINE 3 \t')
-
-        self.check_updated_files()
+    """Test rstrip() transform cleans whitespace at end of lines."""
 
     def test_transform(self):
         """Test rstrip() transform function.

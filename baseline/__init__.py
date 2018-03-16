@@ -27,6 +27,13 @@ from baseline._baseline import Baseline
 from baseline._transforms import rstrip
 
 
+class RawBaseline(Baseline):
+
+    """Baselined string (use raw form of multiline string when possible)."""
+
+    _AVOID_RAW_FORM = False
+
+
 class StrippedBaseline(Baseline):
 
     """Baselined string (with whitespace stripped from line endings)."""

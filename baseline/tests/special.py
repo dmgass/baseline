@@ -6,7 +6,7 @@ from baseline import Baseline
 
 double_quote = Baseline("""SPECIAL ["]""")
 
-backslash = Baseline(r"""SPECIAL [\]""")
+backslash = Baseline("""SPECIAL [\\]""")
 
 tab = Baseline("""SPECIAL [\t]""")
 

@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from baseline import Baseline
+from baseline import RawBaseline
 
-lower = Baseline(r"""LOWER""")  # lower case "r" present
+lower = RawBaseline(r"""LOWER""")  # lower case "r" present
 
-upper = Baseline(R"""UPPER""")  # upper case "R" present
+upper = RawBaseline(R"""UPPER""")  # upper case "R" present
 
-missing = Baseline("""MISSING""")  # no "raw" designator present
+missing = RawBaseline("""MISSING""")  # no "raw" designator present
