@@ -29,30 +29,25 @@ import importlib
 import io
 import os
 import sys
-from unittest import TestCase, main
+from unittest import TestCase
+from unittest.mock import Mock
 
 import baseline
-
 from baseline import Baseline, rstrip
 
-if sys.version_info.major >= 3:
-    from unittest.mock import Mock
-else:
-    from mock import Mock
+from . import endswith
+from . import indents
+from . import raw
+from . import simple
+from . import special
+from . import whitespace
 
-SEP = '\n' + getattr(baseline, '_baseline').SEPARATOR + '\n'
-Script = getattr(baseline, '_script').Script
+SEP = '\n' + baseline._baseline.SEPARATOR + '\n'
+Script = baseline._script.Script
 
 
 # suppress file writes
 Script.TEST_MODE = True
-
-endswith = importlib.import_module('endswith')
-indents = importlib.import_module('indents')
-raw = importlib.import_module('raw')
-simple = importlib.import_module('simple')
-special = importlib.import_module('special')
-whitespace = importlib.import_module('whitespace')
 
 
 class BaseTestCase(TestCase):
@@ -600,7 +595,3 @@ class Stripped(BaseTestCase):
         stimulus = 'LINE 1 \nLINE 2\t\n    LINE 3 \t'
         expected = 'LINE 1\nLINE 2\n    LINE 3'
         self.assertEqual(rstrip(stimulus), expected)
-
-
-if __name__ == '__main__':
-    main()

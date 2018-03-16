@@ -27,12 +27,11 @@ import sys
 from argparse import ArgumentParser
 from glob import glob
 
-UPDATE_EXT = '.update.py'
+PY2 = sys.version_info.major < 3
+if PY2:  # pragma: no cover
+    input = raw_input
 
-if sys.version_info.major >= 3:
-    console_input = input
-else:
-    console_input = raw_input
+UPDATE_EXT = '.update.py'
 
 
 def main(args=None):
@@ -57,20 +56,17 @@ def main(args=None):
 
     args = parser.parse_args(args)
 
-    paths = args.path
-
-    if not paths:
-        paths = ['.']
+    paths = args.path or ['.']
 
     paths = [path for pattern in paths for path in glob(pattern)]
 
     if args.walk:
-        for dirpath in [p for p in paths if os.path.isdir(p)]:
+        for dirpath in (p for p in paths if os.path.isdir(p)):
             for root, _dirs, files in os.walk(dirpath):
-                paths += [os.path.join(root, filename) for filename in files]
+                paths += (os.path.join(root, filename) for filename in files)
     else:
-        for dirpath in [p for p in paths if os.path.isdir(p)]:
-            paths += [os.path.join(dirpath, pth) for pth in os.listdir(dirpath)]
+        for dirpath in (p for p in paths if os.path.isdir(p)):
+            paths += (os.path.join(dirpath, pth) for pth in os.listdir(dirpath))
 
     update_paths = [
         os.path.abspath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
@@ -81,15 +77,15 @@ def main(args=None):
         print('Found updates for:')
         for path in script_paths:
             print('  ' + os.path.relpath(path))
-        print('')
+        print()
 
         try:
-            console_input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
+            input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
         except KeyboardInterrupt:
-            print('')
+            print()
             print('Update canceled.')
         else:
-            print ('')
+            print()
             for script_path, update_path in zip(script_paths, update_paths):
                 with open(update_path) as update:
                     new_content = update.read()

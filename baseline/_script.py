@@ -67,9 +67,13 @@ class Script(object):
         :rtype: str
 
         """
-        retval = os.path.relpath(path, os.getcwd())
-        if path.startswith('..'):
+        try:
+            retval = os.path.relpath(path, os.getcwd())
+        except ValueError:
             retval = path
+        else:
+            if retval.startswith('..'):
+                retval = path
         return retval
 
     def add_update(self, linenum, update):
