@@ -21,10 +21,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 """Ease update of Python string baselines."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 
-from baseline._baseline import Baseline
-from baseline._transforms import rstrip
+from .__about__ import * ; del __about__
+
+from ._baseline import Baseline
+from ._transforms import rstrip
 
 
 class RawBaseline(Baseline):

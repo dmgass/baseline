@@ -1,0 +1,12 @@
+include README.rst
+include CHANGES.rst
+include LICENSE
+include tox.ini
+
+graft docs
+prune docs/_build
+prune docs/_templates
+
+graft tests
+
+global-exclude *.py[co] __pycache__

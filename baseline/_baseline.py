@@ -29,16 +29,14 @@ import sys
 
 from ._script import Script
 
+PY2 = sys.version_info.major < 3
+if PY2:  # pragma: no cover
+    ascii = repr
+
 
 SEPARATOR = '\n' + '*' * 40 + '\n'
 
-if sys.version_info.major >= 3:
-    baseclass = str
-    INSIDE_STRING_DELIMETER_SLICE = slice(1, -1)
-else:
-    baseclass = unicode
-    INSIDE_STRING_DELIMETER_SLICE = slice(2, -1)
-
+baseclass = type(u"")
 
 RAW_MULTILINE_CHARS = ('\n', '"', '\\')
 
@@ -65,7 +63,7 @@ def multiline_repr(text, special_chars=('\n', '"')):
     try:
         char = special_chars[0]
     except IndexError:
-        text = repr(text)[INSIDE_STRING_DELIMETER_SLICE]
+        text = ascii(text)[2 if PY2 else 1:-1]
     else:
         text = char.join(
             multiline_repr(s, special_chars[1:]) for s in text.split(char))
@@ -163,26 +161,26 @@ class Baseline(baseclass):
         key = (path, linenum)
 
         try:
-            instance = cls._all_instances[key]
+            self = cls._all_instances[key]
         except KeyError:
             indent, dedented_text = cls._dedent(text)
-            instance = baseclass.__new__(cls, dedented_text)
-            cls._all_instances[key] = instance
+            self = super(Baseline, cls).__new__(cls, dedented_text)
+            cls._all_instances[key] = self
 
             # initialize instance here instead of __init__ to avoid:
             #   (1) reinitializing when returning a pre-existing instance
             #   (2) recomputing path and linenum (or corrupting class signature
             #       by passing them to __init__)
-            instance.z__path = path
-            instance.z__linenum = linenum
-            instance._indent = indent
-            instance._updates = set()
+            self.z__path = path
+            self.z__linenum = linenum
+            self._indent = indent
+            self._updates = set()
 
         else:
-            if baseclass.__ne__(instance, text):
+            if baseclass.__ne__(self, text):
                 raise RuntimeError('varying baseline text not allowed')
 
-        return instance
+        return self
 
     def __eq__(self, text):
         """Compare string against baseline.
@@ -221,10 +219,11 @@ class Baseline(baseclass):
 
         return is_equal
 
-    def __ne__(self, text):
+    def __ne__(self, other):
         # not necessary for Python 3 or greater, but override for Python 2
         # for use in regression test where assertNotEqual() is used
-        return not (self == text)
+        eq = self.__eq__(other)
+        return NotImplemented if eq is NotImplemented else not eq
 
     def __hash__(self):
         # provide unique ID to allow Baseline instances to be a part of a set
@@ -284,7 +283,7 @@ class Baseline(baseclass):
 
         indent = ' ' * self._indent
 
-        lines = [(indent + line).rstrip() for line in update.split('\n')]
+        lines = ((indent + line).rstrip() for line in update.split('\n'))
 
         return '\n'.join(lines).lstrip()
 
