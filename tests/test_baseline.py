@@ -25,10 +25,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import atexit
 import difflib
-import importlib
 import io
 import os
-import sys
 from unittest import TestCase
 from unittest.mock import Mock
 

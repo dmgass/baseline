@@ -11,7 +11,7 @@ Contributors
 
 + Adam Karpierz (akarpierz@gmail.com)
     - Python 3 support
-    - Packaging modernization
+    - Packaging
 
 
 ***********

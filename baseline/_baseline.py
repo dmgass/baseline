@@ -156,8 +156,6 @@ class Baseline(baseclass):
         path = os.path.abspath(frame[1])
         linenum = frame[2]
 
-        assert path.lower().endswith('.py')
-
         key = (path, linenum)
 
         try:
@@ -304,6 +302,10 @@ class Baseline(baseclass):
         updated_scripts = {}
 
         for baseline in cls._baselines_to_update:
+
+            if baseline.z__path.endswith('<stdin>'):
+                continue
+
             try:
                 script = updated_scripts[baseline.z__path]
             except KeyError:
