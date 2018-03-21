@@ -1,21 +1,20 @@
+########
 baseline
-========
+########
 
-.. include:: README.rst
+Ease maintenance of baselined string.
 
-Parts of the documentation
-==========================
+*****
+Usage
+*****
+
+Versions are incremented according to `semver <http://semver.org/>`_.
+
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
+   about.rst
+   changelog.rst
    install.rst
-   userguide.rst
-
-   CHANGES.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`

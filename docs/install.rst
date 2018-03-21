@@ -1,24 +1,35 @@
 .. _install:
 
+############
 Installation
-============
+############
 
+*************
 Prerequisites
--------------
+*************
 
-+ Python 2.7 or higher or 3.4 or higher
++ `Python <https://www.python.org/>`_
 
-  * http://www.python.org/
-  * 2.7 and 3.4 are primary test environments.
+    * version 2.7 or higher
+    * version 3.4 or higher
 
-+ pip and setuptools
++ `pip <https://pypi.python.org/pypi/pip>`_
 
-  * http://pypi.python.org/pypi/pip
-  * http://pypi.python.org/pypi/setuptools
+    * comes with Python 2.7.9 and higher
+    * comes with Python 3.4 and higher
 
++ `setuptools <https://pypi.python.org/pypi/setuptools>`_
+
+
+*******
 Install
--------
+*******
 
-Should be easy as ::
+At a shell prompt, use `pip <https://pypi.python.org/pypi/pip>`_ to
+automatically download and install
+`setuptools <https://pypi.python.org/pypi/setuptools>`_ and
+:doc:`baseline </index>`::
 
+    python -m pip install --upgrade setuptools
     python -m pip install --upgrade baseline
+
