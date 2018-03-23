@@ -19,25 +19,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-"""Ease update of Python string baselines."""
+"""Easy String Baseline."""
 
 from __future__ import absolute_import, division, print_function
 
 from .__about__ import * ; del __about__
 
 from ._baseline import Baseline
-from ._transforms import rstrip
 
 
 class RawBaseline(Baseline):
 
-    """Baselined string (use raw form of multiline string when possible)."""
+    """Baselined string.
+
+    Support comparison of a string against this baseline. When the comparison
+    results in a mismatch, make a copy of the Python script containing the
+    baseline and modify the baseline to match the new value.
+
+    When updating baseline string, use raw multi-line string form when
+    possible so that backslashes present in baselined string only appear
+    as a single character in the source file.
+
+    """
 
     _AVOID_RAW_FORM = False
-
-
-class StrippedBaseline(Baseline):
-
-    """Baselined string (with whitespace stripped from line endings)."""
-
-    TRANSFORMS = [rstrip]

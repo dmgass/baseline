@@ -75,7 +75,7 @@ class Baseline(baseclass):
 
     """Baselined string.
 
-    Support comparison of a string against a baseline. When the comparison
+    Support comparison of a string against this baseline. When the comparison
     results in a mismatch, make a copy of the Python script containing the
     baseline and modify the baseline to match the new value.
 
@@ -251,7 +251,7 @@ class Baseline(baseclass):
             else:
                 text_repr = multiline_repr(text, RAW_MULTILINE_CHARS)
 
-                if len(text_repr) == len(text) and '\\U' not in text.upper():
+                if len(text_repr) == len(text):
                     raw_char = 'r' if '\\' in text_repr else ''
                 else:
                     # must have special characters that required added backslash

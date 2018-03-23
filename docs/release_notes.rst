@@ -1,6 +1,6 @@
-##########
-Change Log
-##########
+########################
+[baseline] Release Notes
+########################
 
 Versions are incremented according to `semver <http://semver.org/>`_.
 

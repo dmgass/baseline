@@ -1,8 +1,8 @@
 .. _install:
 
-############
-Installation
-############
+#######################
+[baseline] Installation
+#######################
 
 *************
 Prerequisites
@@ -21,9 +21,9 @@ Prerequisites
 + `setuptools <https://pypi.python.org/pypi/setuptools>`_
 
 
-*******
-Install
-*******
+*************
+Install Steps
+*************
 
 At a shell prompt, use `pip <https://pypi.python.org/pypi/pip>`_ to
 automatically download and install

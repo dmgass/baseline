@@ -31,7 +31,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import baseline
-from baseline import Baseline, rstrip
+from baseline import Baseline
 
 from . import endswith
 from . import indents
@@ -349,15 +349,15 @@ class RawStringDesignator(BaseTestCase):
 
         self.check_updated_files(expected_updates)
 
-    def test_removal_when_u_escape(self):
-        """Test raw string designator removed when backlash "u" present."""
+    def test_kept_when_u_escape(self):
+        """Test raw string designator kept when backlash "u" present."""
         self.assertNotEqual(raw.lower, 'LOWER\\u')
         self.assertNotEqual(raw.upper, 'UPPER\\U')
 
         expected_updates = {
             raw:  [
-                ('(r"""LOWER', '("""LOWER\\\\u'),
-                ('(R"""UPPER', '("""UPPER\\\\U'),
+                ('(r"""LOWER', '(r"""LOWER\\u'),
+                ('(R"""UPPER', '(r"""UPPER\\U'),
             ]}
 
         self.check_updated_files(expected_updates)
@@ -577,19 +577,3 @@ class WhiteSpace(BaseTestCase):
         self.assertNotEqual(whitespace.multiple, 'WHITESPACE+\n\n')
 
         self.check_updated_files({whitespace: [('WHITESPACE', 'WHITESPACE+')]})
-
-
-class Stripped(BaseTestCase):
-
-    """Test rstrip() transform cleans whitespace at end of lines."""
-
-    def test_transform(self):
-        """Test rstrip() transform function.
-
-        Test that lines passed in with whitespace at the end are returned
-        without the whitespace.
-
-        """
-        stimulus = 'LINE 1 \nLINE 2\t\n    LINE 3 \t'
-        expected = 'LINE 1\nLINE 2\n    LINE 3'
-        self.assertEqual(rstrip(stimulus), expected)
