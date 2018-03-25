@@ -22,8 +22,9 @@ the ending triple quote on a separate line and indent it to the level
 you wish the string baseline update to be indented to. Compare the
 baseline to the string being tested:
 
+**fox.py**
+
 .. code-block:: python
-    :caption: fox.py
 
     from baseline import Baseline
 
@@ -41,8 +42,9 @@ the triple quoted baseline string in the source file and updated it with the
 miscompared value. When the interpretter exited, the tool saved the updated
 source file using the file extension ``.update.py``):
 
+**fox.update.py**
+
 .. code-block:: python
-    :caption: fox.update.py
 
     from baseline import Baseline
 
