@@ -9,6 +9,8 @@ mismatch occurs. The update process includes a manual step to facilitate a
 review of the change before acceptance. The tool uses multi-line string format
 for string baselines to improve readability for human review.
 
+Complete documentation: http://baseline.readthedocs.io/en/latest/
+
 
 ***********
 Quick Start
