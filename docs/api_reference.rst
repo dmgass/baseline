@@ -21,5 +21,6 @@ Classes
 Command Line
 ************
 
+.. code-block:: shell
 
-.. program-output:: python -m baseline -h
+    python -m baseline --help
