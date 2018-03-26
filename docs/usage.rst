@@ -121,7 +121,8 @@ value:
 
 If this is a common operation or there are multiple transformations needed,
 override the ``TRANSFORMS`` class attribute and list the operations to
-be performed on the test string before every comparison:
+be performed. The tool performs each of the operations on the test string
+before every comparison.
 
 .. code-block:: python
 

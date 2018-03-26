@@ -2,15 +2,12 @@
 [baseline] Easy String Baseline
 ###############################
 
-This subpackage offers a mechanism to compare a string against a baselined
-copy and update the baselined copy to match the new value when a mismatch
-occurs. The update process includes a separate manual step to facilitate a
-review of the change before acceptance.
-
 This tool streamlines creation and maintenance of tests which compare string
-output against a baseline. The tool uses multiline string format for string
-baselines to improve readability for human review and acceptance of baseline
-updates.
+output against a baseline. It offers a mechanism to compare a string against
+a baselined copy and update the baselined copy to match the new value when a
+mismatch occurs. The update process includes a manual step to facilitate a
+review of the change before acceptance. The tool uses multi-line string format
+for string baselines to improve readability for human review.
 
 
 ***********
@@ -19,10 +16,9 @@ Quick Start
 
 Create an empty baseline with a triple quoted multi-line string. Place
 the ending triple quote on a separate line and indent it to the level
-you wish the string baseline update to be indented to. Compare the
-baseline to the string being tested:
-
-**fox.py**
+you wish the string baseline update to be indented to. Add a compare of
+the string being tested to the baseline string. Then save the file as
+``fox.py``:
 
 .. code-block:: python
 
@@ -36,13 +32,11 @@ baseline to the string being tested:
     assert test_string == expected
 
 
-Run the script and observe that the ``assert`` raises an exception since
+Run ``fox.py`` and observe that the ``assert`` raises an exception since
 the strings are not equal.  Because the comparison failed, the tool located
 the triple quoted baseline string in the source file and updated it with the
 miscompared value. When the interpretter exited, the tool saved the updated
-source file using the file extension ``.update.py``):
-
-**fox.update.py**
+source file but changed the file name to ``fox.update.py``:
 
 .. code-block:: python
 

@@ -33,6 +33,12 @@ if PY2:  # pragma: no cover
 
 UPDATE_EXT = '.update.py'
 
+DESCRIPTION = """
+Locate scripts with baseline updates within the paths specified and modify 
+the scripts with the updates found. (The scripts to be modified will be 
+summarized and you will be offered a chance to cancel before files are
+changed.)
+""".strip()
 
 def main(args=None):
     """Command line interface.
@@ -44,7 +50,7 @@ def main(args=None):
     """
     parser = ArgumentParser(
         prog='baseline',
-        description='Overwrite script with baseline update.')
+        description=DESCRIPTION)
 
     parser.add_argument(
         'path', nargs='*',

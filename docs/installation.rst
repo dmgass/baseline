@@ -10,15 +10,12 @@ Prerequisites
 
 + `Python <https://www.python.org/>`_
 
-    * version 2.7 or higher
+    * version 2.7
     * version 3.4 or higher
 
-+ `pip <https://pypi.python.org/pypi/pip>`_
-
-    * comes with Python 2.7.9 and higher
-    * comes with Python 3.4 and higher
-
-+ `setuptools <https://pypi.python.org/pypi/setuptools>`_
++ `Requirements for Installing Packages <https://packaging.python.org/tutorials/installing-packages/#requirements-for-installing-packages>`_
+  (located in the `Installing Packages <https://packaging.python.org/tutorials/installing-packages/>`_ tutorial within the
+  `Python Packaging User Guide <https://packaging.python.org/>`_).
 
 
 *************
@@ -26,10 +23,6 @@ Install Steps
 *************
 
 At a shell prompt, use `pip <https://pypi.python.org/pypi/pip>`_ to
-automatically download and install
-`setuptools <https://pypi.python.org/pypi/setuptools>`_ and
-:doc:`baseline </index>`::
+automatically download and install :doc:`baseline </index>`::
 
-    python -m pip install --upgrade setuptools
     python -m pip install --upgrade baseline
-
