@@ -2,6 +2,13 @@
 [baseline] Easy String Baseline
 ###############################
 
+.. image:: https://readthedocs.org/projects/baseline/badge/?version=latest
+   :target: https://baseline.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+.. image:: https://travis-ci.org/dmgass/baseline.svg?branch=master
+   :target: https://travis-ci.org/dmgass/baseline
+
 This tool streamlines creation and maintenance of tests which compare string
 output against a baseline. It offers a mechanism to compare a string against
 a baselined copy and update the baselined copy to match the new value when a
