@@ -14,6 +14,9 @@ Contributors
     - Python 3 support
     - Packaging
 
++ Peter Gessler (gessler.pd@gmail.com)
+    - Travis C/I Setup
+
 
 ***********
 Development

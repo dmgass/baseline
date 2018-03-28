@@ -9,3 +9,9 @@ Versions are incremented according to `semver <http://semver.org/>`_.
 
 + 0.1.1 (2018-03-25)
     - Change author to match PyPi user name.
+
++ 0.1.2 (2018-03-27)
+    - Add Travis C/I support.
+    - Change author name to commonly used form.
+    - Use Python 3.5 in tox for basic tasks.
+    - Remove "beta" label.
