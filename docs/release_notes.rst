@@ -15,3 +15,8 @@ Versions are incremented according to `semver <http://semver.org/>`_.
     - Change author name to commonly used form.
     - Use Python 3.5 in tox for basic tasks.
     - Remove "beta" label.
+
++ 0.1.3 (2018-03-29)
+    - Show command line help dump in API reference documentation.
+    - Fix development status classifier in setup configuration
+      (to make PyPi listing accurate).
