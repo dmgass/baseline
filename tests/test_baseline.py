@@ -556,7 +556,7 @@ class WhiteSpace(BaseTestCase):
 
     """Test whitespace supported in baselined strings."""
 
-    def test_compare(self):
+    def test_compare_with_blank_lines(self):
         """Test comparisons of strings with blank lines function properly.
 
          Check comparisons meet expectations, that "atexit" registration
@@ -566,8 +566,8 @@ class WhiteSpace(BaseTestCase):
         self.assertEqual(whitespace.multiple, 'WHITESPACE\n\n')
         self.check_updated_files()
 
-    def test_update(self):
-        """Test updates resulting from comparsions of strings with blank lines.
+    def test_update_with_blank_lines(self):
+        """Test updates resulting from comparisons of strings with blank lines.
 
          Check comparisons meet expectations, that "atexit" registration
          occurred, and that file update created a baseline update with
@@ -577,3 +577,27 @@ class WhiteSpace(BaseTestCase):
         self.assertNotEqual(whitespace.multiple, 'WHITESPACE+\n\n')
 
         self.check_updated_files({whitespace: [('WHITESPACE', 'WHITESPACE+')]})
+
+    def test_compare_with_spaces(self):
+        """Test comparisons of strings with spaces at end of the line.
+
+         Check comparisons meet expectations, that "atexit" registration
+         did not occur, and that no files were to be updated.
+
+        """
+        self.assertEqual(whitespace.has_spaces,
+                         'SPACE_CHAR > \n \n^ SPACE_CHAR')
+        self.check_updated_files()
+
+    def test_update_with_blank_lines(self):
+        """Test updates resulting from comparisons of strings with blank lines.
+
+         Check comparisons meet expectations, that "atexit" registration
+         occurred, and that file update created a baseline update with
+         the blank lines maintained.
+
+        """
+        self.assertNotEqual(whitespace.has_spaces,
+                            'SPACE_CHAR+ > \n \n^ SPACE_CHAR+')
+
+        self.check_updated_files({whitespace: [('SPACE_CHAR', 'SPACE_CHAR+')]})

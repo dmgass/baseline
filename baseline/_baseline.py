@@ -281,7 +281,7 @@ class Baseline(baseclass):
 
         indent = ' ' * self._indent
 
-        lines = ((indent + line).rstrip() for line in update.split('\n'))
+        lines = ((indent + line) if line else '' for line in update.split('\n'))
 
         return '\n'.join(lines).lstrip()
 

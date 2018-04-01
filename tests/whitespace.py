@@ -29,3 +29,9 @@ multiple = Baseline("""
 
 
     """)
+
+has_spaces = Baseline("""
+    SPACE_CHAR > 
+     
+    ^ SPACE_CHAR
+    """)
