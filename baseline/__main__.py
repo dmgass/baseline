@@ -57,6 +57,9 @@ def main(args=None):
         help='module or directory path')
 
     parser.add_argument(
+        '--movepath', help='location to move script updates')
+
+    parser.add_argument(
         '-w', '--walk', action='store_true',
         help='recursively walk directories')
 
@@ -75,35 +78,46 @@ def main(args=None):
             paths += (os.path.join(dirpath, pth) for pth in os.listdir(dirpath))
 
     update_paths = [
-        os.path.abspath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
+        os.path.relpath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
 
     if update_paths:
         script_paths = [pth[:-len(UPDATE_EXT)] + '.py' for pth in update_paths]
 
         print('Found updates for:')
         for path in script_paths:
-            print('  ' + os.path.relpath(path))
+            print('  ' + path)
         print()
 
-        try:
-            input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
-        except KeyboardInterrupt:
-            print()
-            print('Update canceled.')
-        else:
-            print()
+        cancel = 0
+
+        if not args.movepath:
+            try:
+                input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
+            except KeyboardInterrupt:
+                print()
+                print('Update canceled.')
+                cancel = 1
+            else:
+                print()
+
+        if not cancel:
             for script_path, update_path in zip(script_paths, update_paths):
+                if args.movepath:
+                    script_path = os.path.join(args.movepath, script_path)
+                    if update_path.startswith('..'):
+                        raise RuntimeError(
+                            'destination outside of move path: ' + script_path)
+                    script_dirpath = os.path.dirname(script_path)
+                    if not os.path.isdir(script_dirpath):
+                        os.makedirs(script_dirpath)
                 with open(update_path) as update:
                     new_content = update.read()
                 with open(script_path, 'w') as script:
                     script.write(new_content)
                 os.remove(update_path)
-                print(
-                    os.path.relpath(update_path) +
-                    ' -> ' +
-                    os.path.relpath(script_path))
+                print(update_path + ' -> ' + script_path)
 
-    return 0
+    return cancel
 
 
 if __name__ == '__main__':

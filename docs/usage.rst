@@ -171,6 +171,11 @@ Quick Tips
   contains both styles, transform one style into something else before
   comparison.
 
+- To archive resulting test script updates from a regression test run
+  within a continuous integration system, use the ``--movepath`` command
+  line option to move updated scripts to a new location instead of
+  overwriting the original script. T
+
 
 Initial Baseline Value
 ======================

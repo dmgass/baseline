@@ -5,6 +5,15 @@
 Versions are incremented according to `semver <http://semver.org/>`_.
 
 ***
+0.2
+***
+
++ 0.2.0 (2018-05-18)
+    - Add ``--movepath`` command line option to move updated scripts to
+      a new location instead of overwriting the original script (for
+      use in continuous integration systems performing regression tests).
+
+***
 0.1
 ***
 
@@ -24,11 +33,3 @@ Versions are incremented according to `semver <http://semver.org/>`_.
     - Show command line help dump in API reference documentation.
     - Fix development status classifier in setup configuration
       (to make PyPi listing accurate).
-
-+ 0.1.4 (2018-04-01)
-    - Fix anomaly where spaces at the end of a line were removed when
-      when updating a string baseline. The incorrect removal of the
-      spaces caused comparisons of the string with end of line spaces
-      against the baseline to fail. Now the tool retains the spaces
-      when updating baseline strings so that comparisons of the string
-      with end of line spaces against the baseline pass.
