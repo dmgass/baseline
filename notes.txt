@@ -1,0 +1,16 @@
+TODO
+----
+
+1) write tests for command line interface
+2) write up instructions for rebuilding package and publishing on pypi
+3) write up instructions on how to build docs locally
+4) write up instructions on how to run tox locally
+5) set up RTD to contain docs for multiple revisions
+
+
+Building/Publishing Instructions
+--------------------------------
+
+$ rm dist/*
+$ python setup.py bdist_wheel
+$ twine upload

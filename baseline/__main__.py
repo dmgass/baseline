@@ -80,6 +80,8 @@ def main(args=None):
     update_paths = [
         os.path.relpath(p) for p in paths if p.lower().endswith(UPDATE_EXT)]
 
+    exitcode = 0
+
     if update_paths:
         script_paths = [pth[:-len(UPDATE_EXT)] + '.py' for pth in update_paths]
 
@@ -88,19 +90,17 @@ def main(args=None):
             print('  ' + path)
         print()
 
-        cancel = 0
-
         if not args.movepath:
             try:
                 input('Hit [ENTER] to update, [Ctrl-C] to cancel ')
             except KeyboardInterrupt:
                 print()
                 print('Update canceled.')
-                cancel = 1
+                exitcode = 1
             else:
                 print()
 
-        if not cancel:
+        if exitcode == 0:
             for script_path, update_path in zip(script_paths, update_paths):
                 if args.movepath:
                     script_path = os.path.join(args.movepath, script_path)
@@ -117,7 +117,7 @@ def main(args=None):
                 os.remove(update_path)
                 print(update_path + ' -> ' + script_path)
 
-    return cancel
+    return exitcode
 
 
 if __name__ == '__main__':

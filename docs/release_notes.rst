@@ -13,6 +13,12 @@ Versions are incremented according to `semver <http://semver.org/>`_.
       a new location instead of overwriting the original script (for
       use in continuous integration systems performing regression tests).
 
++ 0.2.1 (2018-05-19)
+    - Fix command line tool to not raise UnboundedLocalError exception.
+      Previously when tool was invoked with a wild card that yielded
+      no baseline updates to move, an exception was unexpectedly raised.
+
+
 ***
 0.1
 ***
