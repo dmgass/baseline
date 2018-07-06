@@ -13,4 +13,4 @@ Building/Publishing Instructions
 
 $ rm dist/*
 $ python setup.py bdist_wheel
-$ twine upload
+$ twine upload dist/*.whl
