@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import io
 import os
 import re
+import sys
 from enum import Enum
 
 
@@ -93,7 +94,7 @@ class Script(object):
                 self._lines = fh.read().split('\n')
 
         return self._lines
-    
+
     # used to replace baseline string representation
     REGEX = re.compile(
         '(?P<prefix>.*?)'  # stuff to retain before string representation
@@ -115,29 +116,33 @@ class Script(object):
 
         count = 0
         delimiter = None
-        for index in range(linenum - 1, -1, -1):
-            line = lines[index]
-            if delimiter is None:
-                single_quote_index = line.rfind("'''")
-                double_quote_index = line.rfind('"""')
-                if double_quote_index >= 0:
-                    if double_quote_index > single_quote_index:
-                        delimiter = '"""'
-                    else:
-                        delimiter = "'''"
-                elif single_quote_index >= 0:
-                    delimiter = "'''"
-                else:
-                    continue
-            count += lines[index].count(delimiter)
-            if count >= 2:
-                linenum = index
-                break
+
+        if sys.version_info >= (3, 8):
+            linenum -= 1
         else:
-            docstr_not_found = (
-                '{}:{}: could not find baseline docstring'
-                ''.format(self.showpath(self.path), linenum))
-            raise RuntimeError(docstr_not_found)
+            for index in range(linenum - 1, -1, -1):
+                line = lines[index]
+                if delimiter is None:
+                    single_quote_index = line.rfind("'''")
+                    double_quote_index = line.rfind('"""')
+                    if double_quote_index >= 0:
+                        if double_quote_index > single_quote_index:
+                            delimiter = '"""'
+                        else:
+                            delimiter = "'''"
+                    elif single_quote_index >= 0:
+                        delimiter = "'''"
+                    else:
+                        continue
+                count += lines[index].count(delimiter)
+                if count >= 2:
+                    linenum = index
+                    break
+            else:
+                docstr_not_found = (
+                    '{}:{}: could not find baseline docstring'
+                    ''.format(self.showpath(self.path), linenum))
+                raise RuntimeError(docstr_not_found)
 
         old_content = '\n'.join(lines[linenum:])
 

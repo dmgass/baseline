@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,6 @@ quote = Baseline("""
     ENDSWITH "
     """)
 
-backslash = Baseline("""
-    ENDSWITH \\
+backslash = Baseline(r"""
+    ENDSWITH \
     """)

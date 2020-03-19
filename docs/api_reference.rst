@@ -14,7 +14,6 @@ Classes
 
 .. autoclass:: Baseline
 
-.. autoclass:: RawBaseline
 
 
 ************

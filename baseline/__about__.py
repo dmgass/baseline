@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,5 +35,5 @@ __version__      = "{0.major}.{0.minor}.{0.micro}{1}{2}".format(__version_info__
 __author__       = "Dan Gass"
 __maintainer__   = "Dan Gass"
 __email__        = "dan.gass@gmail.com"
-__copyright__    = "Copyright 2018 Daniel Mark Gass"
+__copyright__    = "Copyright 2020 Daniel Mark Gass"
 __license__      = "MIT License ; http://opensource.org/licenses/MIT"

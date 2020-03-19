@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from baseline import RawBaseline
+from baseline import Baseline
 
-lower = RawBaseline(r"""LOWER""")  # lower case "r" present
+lower = Baseline(r"""LOWER""")  # lower case "r" present
 
-upper = RawBaseline(R"""UPPER""")  # upper case "R" present
+upper = Baseline(R"""UPPER""")  # upper case "R" present
 
-missing = RawBaseline("""MISSING""")  # no "raw" designator present
+missing = Baseline("""MISSING""")  # no "raw" designator present

@@ -8,6 +8,13 @@ TODO
 5) set up RTD to contain docs for multiple revisions
 
 
+Running Tox locally (running tests)
+-----------------------------------
+
+$ python -m pip install tox
+$ tox -e py37
+
+
 Building/Publishing Instructions
 --------------------------------
 
