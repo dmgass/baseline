@@ -84,8 +84,6 @@ class Baseline(baseclass):
 
     TRANSFORMS = []
 
-    _AVOID_RAW_FORM = False
-
     # set of instances of this class where a string comparison against the
     # baseline was a mismatch
     _baselines_to_update = set()
