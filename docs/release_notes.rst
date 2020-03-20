@@ -5,9 +5,9 @@
 Versions increment per `semver <http://semver.org/>`_.
 
 
-******************
-1.0.0 2020-MAR-TBD
-******************
+*****************
+1.0.0 2020-MAR-19
+*****************
 
 + Improve baseline update when multiple values compared against the
   same baseline. Generate a single multi-line baseline with headers
@@ -21,10 +21,10 @@ Versions increment per `semver <http://semver.org/>`_.
   than the last.)
 
 + Change behavior of ``Baseline`` to use raw strings when updating
-  baselines when possible.
+  baselines when possible and improves readability.
 
 + Deprecate ``RawBaseline`` since ``Baseline`` now incorporates
-  that behavior.
+  its behavior.
 
 
 *************

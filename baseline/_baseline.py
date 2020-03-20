@@ -333,5 +333,6 @@ class RawBaseline(Baseline):
     """
 
     def __new__(cls, text):
-        warn('RawBaseline() deprecated, use Baseline() instead', DeprecationWarning)
+        warn('RawBaseline() deprecated, use equivalent Baseline() instead',
+             DeprecationWarning)
         return super(RawBaseline, cls).__new__(cls, text)
