@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ from baseline import Baseline
 
 double_quote = Baseline("""SPECIAL ["]""")
 
-backslash = Baseline("""SPECIAL [\\]""")
+backslash = Baseline("""BACKSLASH [\\]""")
 
 tab = Baseline("""SPECIAL [\t]""")
 

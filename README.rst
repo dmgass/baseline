@@ -34,7 +34,9 @@ the string being tested to the baseline string. Then save the file as
     expected = Baseline("""
         """)
 
-    test_string = "THE QUICK BROWN FOX\n    JUMPS\nOVER THE LAZY DOG."
+    test_string = """THE QUICK BROWN FOX
+        JUMPS
+    OVER THE LAZY DOG."""
 
     assert test_string == expected
 
@@ -55,7 +57,9 @@ source file but changed the file name to ``fox.update.py``:
         OVER THE LAZY DOG.
         """)
 
-    test_string = "THE QUICK BROWN FOX\n    JUMPS\nOVER THE LAZY DOG."
+    test_string = """THE QUICK BROWN FOX
+        JUMPS
+    OVER THE LAZY DOG."""
 
     assert test_string == expected
 
@@ -77,7 +81,7 @@ scripts and accept them:
 
 
 Run ``fox.py`` again and observe the ``assert`` does not raise an exception
-nor is a source file update generated. If in the future the test value
-changes, the ``assert`` will raise an exception and cause a new source file
+nor is a copy of the source file update generated. If in the future the test
+value changes, the ``assert`` raises an exception and causes a new source file
 update to be generated. Simply repeat the review and acceptance step and you
 are back in business!

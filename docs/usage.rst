@@ -198,32 +198,3 @@ with the closing triple quote:
 
 Run the script and let the tool fill in the string baseline. Then carefully
 review the baseline update and accept.
-
-
-Raw String Baseline
-===================
-
-If the baseline string contains backslashes and no other special characters
-that require escaping, use the :class:`RawBaseline` class to generate
-baseline updates with a raw string format. This provides a more readable
-form for strings that contain such things as Microsoft Windows style paths
-where backslashes are present:
-
-.. code-block:: python
-
-    from baseline import Baseline, RawBaseline
-
-    test_string = 'Some path: C:\\samples\\hello.py'
-
-    # slightly more difficult to read with two backslashes for every one
-    expected = Baseline("""Some path: C:\\samples\\hello.py""")
-    assert test_string == expected
-
-    # a little prettier form with backslashes not required to be escaped
-    expected = RawBaseline(r"""Some path: C:\samples\hello.py""")
-    assert test_string == expected
-
-.. Note::
-    If special characters that require a backslash to represent are present
-    in a miscompared test string (such as chr(0) or the tab character), the
-    baseline update switches to use the normal, non-raw string form.

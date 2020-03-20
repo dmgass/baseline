@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -207,8 +207,20 @@ class MultipleCompares(BaseTestCase):
         self.assertEqual(simple.single, single_updates[0])
         self.assertNotEqual(simple.single, single_updates[1])
 
+        replacement = '\n' + '\n'.join([
+            '######################' * 5,
+            '# Baseline Alternative 1',
+            '######################' * 5,
+            'SINGLE',
+            '######################' * 5,
+            '# Baseline Alternative 2',
+            '######################' * 5,
+            'SINGLE+',
+            '""")'
+        ])
+
         expected_updates = {
-            simple:  [('SINGLE', '"""\n"""'.join(single_updates))],
+            simple:  [('SINGLE""")', replacement)],
         }
 
         self.check_updated_files(expected_updates)
@@ -228,46 +240,43 @@ class MultipleCompares(BaseTestCase):
 
 class BaselineSingleton(BaseTestCase):
 
-    """Test two baseline instantiations at same line result in same instance."""
+    """Test two baseline instantiations at same line result in same instance.
+
+    Simulate baselined text as a constant inside of a function and that
+    function being called multiple times.
+
+    """
 
     def test_same_value(self):
-        """Test same baselined text for every call.
+        """Test same baselined text for every call on the same line.
 
-         Check comparisons meet expectations, that "atexit" registration
-         did not occur, and that no files were to be updated.
+         Check baseline instantiations on the same line produce the
+         same instance.
 
         """
-        sample_text = "Hello world!"
+        baseline1, baseline2 = Baseline("Hello!"), Baseline("Hello!")
 
-        baseline1, baseline2 = [Baseline(sample_text) for _ in range(2)]
-
-        self.assertEqual(baseline1, sample_text)
-        self.assertEqual(baseline2, sample_text)
         self.assertIs(baseline1, baseline2)
-
-        baseline1, baseline2 = Baseline(sample_text), Baseline(sample_text)
-
-        self.assertEqual(baseline1, sample_text)
-        self.assertEqual(baseline2, sample_text)
-        self.assertIs(baseline1, baseline2)
-
-        self.check_updated_files()
 
     def test_differing_value(self):
         """Test differing baselined text for every call.
 
-         Check that exception is raised, that "atexit" registration
-         did not occur, and that no files were to be updated.
+        Ensure users are blocked from dynamically generating the
+        baselined text.
 
         """
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(RuntimeError) as trap:
             Baseline('junk1'), Baseline('junk2')
 
-        with self.assertRaises(RuntimeError):
+        self.assertEqual(
+            str(trap.exception), 'varying baseline text not allowed')
+
+        with self.assertRaises(RuntimeError) as trap:
             for text in ['junk1', 'junk2']:
                 Baseline(text)
 
-        self.check_updated_files()
+        self.assertEqual(
+            str(trap.exception), 'varying baseline text not allowed')
 
 
 class IllegalBaselines(BaseTestCase):
@@ -282,8 +291,13 @@ class IllegalBaselines(BaseTestCase):
 
         """
         both_styles = Baseline('')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as trap:
             self.assertNotEqual(both_styles, '"""' + "'''")
+
+        self.assertEqual(
+            str(trap.exception),
+            'Both triple quote styles exist in string to be baselined, '
+            'replace either """ or \'\'\' before baselining')
 
         self.check_updated_files()
 
@@ -294,10 +308,14 @@ class IllegalBaselines(BaseTestCase):
          did not occur, and that no files were to be updated.
 
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as trap:
             Baseline("""not blank!
                 normal
                 """)
+
+        self.assertEqual(
+            str(trap.exception),
+            'when multiple lines in baseline text, first line must be blank')
 
         self.check_updated_files()
 
@@ -308,10 +326,14 @@ class IllegalBaselines(BaseTestCase):
          did not occur, and that no files were to be updated.
 
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as trap:
             Baseline("""
                 normal
                 not blank!""")
+
+        self.assertEqual(
+            str(trap.exception),
+            'last line in baseline text must only contain indent whitespace')
 
         self.check_updated_files()
 
@@ -322,10 +344,14 @@ class IllegalBaselines(BaseTestCase):
          did not occur, and that no files were to be updated.
 
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as trap:
             Baseline("""
                 not indented enough
                     """)
+
+        self.assertEqual(
+            str(trap.exception),
+            'indents must equal or exceed indent in last line of baseline text')
 
         self.check_updated_files()
 
@@ -488,7 +514,7 @@ class SpecialCharacters(BaseTestCase):
     """Test certain characters (or combinations of) are accomodated."""
 
     double_quote = 'SPECIAL ["]'
-    backslash = 'SPECIAL [{}]'.format('\\')
+    backslash = 'BACKSLASH [{}]'.format('\\')
     tab = 'SPECIAL [{}]'.format(chr(9))
     triple_both = 'SPECIAL [{}],[{}]'.format("'''", '"""')
     triple_double = 'SPECIAL ["""]'
@@ -513,7 +539,7 @@ class SpecialCharacters(BaseTestCase):
 
         self.check_updated_files()
 
-    def test_update(self):
+    def test_update_non_raw(self):
         """Test updates with special characters accommodated with format.
 
          Check comparisons meet expectations, that "atexit" registration
@@ -523,9 +549,6 @@ class SpecialCharacters(BaseTestCase):
         """
         self.assertNotEqual(
             special.double_quote, self.double_quote.replace('S', '+S'))
-
-        self.assertNotEqual(
-            special.backslash, self.backslash.replace('S', '+S'))
 
         self.assertNotEqual(
             special.tab, self.tab.replace('S', '+S'))
@@ -550,6 +573,22 @@ class SpecialCharacters(BaseTestCase):
                 ('SPECIAL', '+SPECIAL'),
                 ('świecie', '\\u015bwiecie')
             ]})
+
+    def test_update_raw(self):
+        """Test updates with special characters accommodated with format.
+
+         Check comparisons meet expectations, that "atexit" registration
+         occurred, and that file update created baseline updates that
+         accommodate the special characters in the string.
+
+        """
+        self.assertNotEqual(
+            special.backslash, self.backslash.replace('B', '+B'))
+
+        # TODO - handle py3 and __future__ in py2 for international characters
+
+        self.check_updated_files({
+            special: [(r'"""BACKSLASH [\\]', 'r"""+BACKSLASH [\\]')]})
 
 
 class WhiteSpace(BaseTestCase):

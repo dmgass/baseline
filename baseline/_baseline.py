@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import atexit
 import inspect
 import os
 import sys
+from warnings import warn
 
 from ._script import Script
 
@@ -38,7 +39,7 @@ SEPARATOR = '\n' + '*' * 40 + '\n'
 
 baseclass = type(u"")
 
-RAW_MULTILINE_CHARS = ('\n', '"', '\\')
+RAW_STRING_SPECIAL_CHARS = ('\n', '"', '\\')
 
 
 def multiline_repr(text, special_chars=('\n', '"')):
@@ -49,8 +50,8 @@ def multiline_repr(text, special_chars=('\n', '"')):
     use of the representation in a triple quoted multi-line string
     context (to avoid escaping newlines and double quotes).
 
-     Pass ``RAW_MULTILINE_CHARS`` as the ``special_chars`` when use
-     context is a "raw" triple quoted string (to also avoid excaping
+     Pass ``RAW_STRING_SPECIAL_CHARS`` as the ``special_chars`` when use
+     context is a "raw" triple quoted string (to also avoid escaping
      backslashes).
 
     :param text: string
@@ -73,16 +74,15 @@ def multiline_repr(text, special_chars=('\n', '"')):
 
 class Baseline(baseclass):
 
-    """Baselined string.
+    """Baseline string.
 
     Support comparison of a string against this baseline. When the comparison
     results in a mismatch, make a copy of the Python script containing the
     baseline and modify the baseline to match the new value.
 
     """
-    TRANSFORMS = []
 
-    _AVOID_RAW_FORM = True
+    TRANSFORMS = []
 
     # set of instances of this class where a string comparison against the
     # baseline was a mismatch
@@ -121,17 +121,17 @@ class Baseline(baseclass):
             indent = 0
 
         elif lines[0].strip():
-            raise ValueError('when multiple lines, first line must be blank')
+            raise ValueError('when multiple lines in baseline text, first line must be blank')
 
         elif lines[-1].strip():
-            raise ValueError('last line must only contain indent whitespace')
+            raise ValueError('last line in baseline text must only contain indent whitespace')
 
         else:
             indent = len(lines[-1])
 
             if any(line[:indent].strip() for line in lines):
                 raise ValueError(
-                    'indents must equal or exceed indent in last line')
+                    'indents must equal or exceed indent in last line of baseline text')
 
             lines = [line[indent:] for line in lines][1:-1]
 
@@ -146,39 +146,38 @@ class Baseline(baseclass):
         source file (i.e. when multi-line, remove common indentation
         as well as the first and last lines).
 
-        :param text: baselined string representation
-        :type text: str or unicode
-        :returns: normalized string representation
+        :param str text: baselined string
+        :returns: normalized baseline string
         :raises RuntimeError: when text differs for a specific location
 
         """
         frame = inspect.getouterframes(inspect.currentframe())[1]
         path = os.path.abspath(frame[1])
         linenum = frame[2]
+        indent, dedented_text = cls._dedent(text)
 
         key = (path, linenum)
 
         try:
-            self = cls._all_instances[key]
+            baseline = cls._all_instances[key]
         except KeyError:
-            indent, dedented_text = cls._dedent(text)
-            self = super(Baseline, cls).__new__(cls, dedented_text)
-            cls._all_instances[key] = self
+            baseline = super(Baseline, cls).__new__(cls, dedented_text)
+            cls._all_instances[key] = baseline
 
             # initialize instance here instead of __init__ to avoid:
             #   (1) reinitializing when returning a pre-existing instance
             #   (2) recomputing path and linenum (or corrupting class signature
             #       by passing them to __init__)
-            self.z__path = path
-            self.z__linenum = linenum
-            self._indent = indent
-            self._updates = set()
+            baseline._path = path
+            baseline._linenum = linenum
+            baseline._indent = indent
+            baseline._updates = set()
 
         else:
-            if baseclass.__ne__(self, text):
+            if baseclass.__ne__(baseline, dedented_text):
                 raise RuntimeError('varying baseline text not allowed')
 
-        return self
+        return baseline
 
     def __eq__(self, text):
         """Compare string against baseline.
@@ -199,7 +198,7 @@ class Baseline(baseclass):
         # triple double quote is present to avoid syntax errors
         if '"""' in text and "'''" in text:
             raise ValueError(
-                'Both triple quote styles exist in string, '
+                'Both triple quote styles exist in string to be baselined, '
                 'replace either """ or {} before baselining'.format("'''"))
 
         # Save a copy of the string in order to later update the string
@@ -231,53 +230,53 @@ class Baseline(baseclass):
         return id(self)
 
     @property
-    def z__update(self):
-        """Triple quoted baseline representation.
-
-        Return string with multiple triple quoted baseline strings when
-        baseline had been compared multiple times against varying strings.
+    def replacement_sourcecode(self):
+        """Baseline replacement source code lines.
 
         :returns: source file baseline replacement text
         :rtype: str
 
         """
-        updates = []
+        # sort updates so Python hash seed has no impact on regression test
+        updates = [update for update in sorted(self._updates)]
 
-        for text in self._updates:
+        if len(updates) > 1:
+            for i, text in enumerate(updates):
+                header = '\n'.join([
+                    '######################' * 5,
+                    '# Baseline Alternative {}'.format(i + 1),
+                    '######################' * 5])
+                updates[i] = header + '\n' + text
 
-            if self._AVOID_RAW_FORM:
-                text_repr = multiline_repr(text)
-                raw_char = ''
+        text = '\n'.join(updates)
+
+        text_repr = multiline_repr(text, RAW_STRING_SPECIAL_CHARS)
+
+        if text_repr == text:
+            raw_char = 'r' if '\\' in text_repr else ''
+        else:
+            # must have special characters that required added backslash
+            # escaping, use normal representation to get backslashes right
+            text = multiline_repr(text)
+            raw_char = ''
+
+        # use triple double quote, except use triple single quote when
+        # triple double quote is present to avoid syntax errors
+        quotes = '"""'
+        if quotes in text:
+            if "'''" in text:
+                text.replace("'''", "```")
             else:
-                text_repr = multiline_repr(text, RAW_MULTILINE_CHARS)
-
-                if len(text_repr) == len(text):
-                    raw_char = 'r' if '\\' in text_repr else ''
-                else:
-                    # must have special characters that required added backslash
-                    # escaping, use normal representation to get backslashes right
-                    text_repr = multiline_repr(text)
-                    raw_char = ''
-
-            # use triple double quote, except use triple single quote when
-            # triple double quote is present to avoid syntax errors
-            quotes = '"""'
-            if quotes in text:
                 quotes = "'''"
 
-            # Wrap with blank lines when multi-line or when text ends with
-            # characters that would otherwise result in a syntax error in
-            # the formatted representation.
-            multiline = self._indent or ('\n' in text)
-            if multiline or text.endswith('\\') or text.endswith(quotes[0]):
-                update = raw_char + quotes + '\n' + text_repr + '\n' + quotes
-            else:
-                update = raw_char + quotes + text_repr + quotes
-
-            updates.append(update)
-
-        # sort updates so Python hash seed has no impact on regression test
-        update = '\n'.join(sorted(updates))
+        # Wrap with blank lines when multi-line or when text ends with
+        # characters that would otherwise result in a syntax error in
+        # the formatted representation.
+        multiline = self._indent or ('\n' in text)
+        if multiline or text.endswith('\\') or text.endswith(quotes[0]):
+            update = raw_char + quotes + '\n' + text + '\n' + quotes
+        else:
+            update = raw_char + quotes + text + quotes
 
         indent = ' ' * self._indent
 
@@ -303,19 +302,35 @@ class Baseline(baseclass):
 
         for baseline in cls._baselines_to_update:
 
-            if baseline.z__path.endswith('<stdin>'):
+            if baseline._path.endswith('<stdin>'):
                 continue
 
             try:
-                script = updated_scripts[baseline.z__path]
+                script = updated_scripts[baseline._path]
             except KeyError:
-                script = Script(baseline.z__path)
-                updated_scripts[baseline.z__path] = script
+                script = Script(baseline._path)
+                updated_scripts[baseline._path] = script
 
-            script.add_update(baseline.z__linenum, baseline.z__update)
+            script.add_update(baseline._linenum, baseline.replacement_sourcecode)
 
         for key in sorted(updated_scripts):
             script = updated_scripts[key]
             script.update()
 
         return updated_scripts
+
+
+class RawBaseline(Baseline):
+
+    """Baselined string.
+
+    Support comparison of a string against this baseline. When the comparison
+    results in a mismatch, make a copy of the Python script containing the
+    baseline and modify the baseline to match the new value.
+
+    """
+
+    def __new__(cls, text):
+        warn('RawBaseline() deprecated, use equivalent Baseline() instead',
+             DeprecationWarning)
+        return super(RawBaseline, cls).__new__(cls, text)

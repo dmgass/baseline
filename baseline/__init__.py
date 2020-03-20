@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,4 @@ from __future__ import absolute_import, division, print_function
 
 from .__about__ import * ; del __about__
 
-from ._baseline import Baseline
-
-
-class RawBaseline(Baseline):
-
-    """Baselined string.
-
-    Support comparison of a string against this baseline. When the comparison
-    results in a mismatch, make a copy of the Python script containing the
-    baseline and modify the baseline to match the new value.
-
-    When updating baseline string, use raw multi-line string form when
-    possible so that backslashes present in baselined string only appear
-    as a single character in the source file.
-
-    """
-
-    _AVOID_RAW_FORM = False
+from ._baseline import Baseline, RawBaseline

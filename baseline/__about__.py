@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Copyright 2018 Daniel Mark Gass
+# Copyright 2020 Daniel Mark Gass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,13 @@ __all__ = ('__title__', '__summary__', '__uri__', '__version_info__',
 __title__        = "baseline"
 __summary__      = "Easy string baseline."
 __uri__          = "https://github.com/dmgass/baseline"
-__version_info__ = type("version_info", (), dict(serial=1,
-                        major=0, minor=2, micro=1, releaselevel="final"))
+__version_info__ = type("version_info", (), dict(serial=0,
+                        major=1, minor=0, micro=0, releaselevel="final"))
 __version__      = "{0.major}.{0.minor}.{0.micro}{1}{2}".format(__version_info__,
                    dict(final="", alpha="a", beta="b", rc="rc")[__version_info__.releaselevel],
                    "" if __version_info__.releaselevel == "final" else __version_info__.serial)
 __author__       = "Dan Gass"
 __maintainer__   = "Dan Gass"
 __email__        = "dan.gass@gmail.com"
-__copyright__    = "Copyright 2018 Daniel Mark Gass"
+__copyright__    = "Copyright 2020 Daniel Mark Gass"
 __license__      = "MIT License ; http://opensource.org/licenses/MIT"
