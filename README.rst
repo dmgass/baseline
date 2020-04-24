@@ -44,7 +44,7 @@ the string being tested to the baseline string. Then save the file as
 Run ``fox.py`` and observe that the ``assert`` raises an exception since
 the strings are not equal.  Because the comparison failed, the tool located
 the triple quoted baseline string in the source file and updated it with the
-miscompared value. When the interpretter exited, the tool saved the updated
+mis-compared value. When the interpreter exited, the tool saved the updated
 source file but changed the file name to ``fox.update.py``:
 
 .. code-block:: python
@@ -67,18 +67,19 @@ source file but changed the file name to ``fox.update.py``:
 After reviewing the change with your favorite file differencing tool,
 accept the change by either manually overwriting the original file or use
 the ``baseline`` command line tool to scan the directory for updated
-scripts and accept them:
+scripts:
 
 .. code-block:: shell
 
     $ python -m baseline *
-    Found updates for:
+    Found baseline updates for:
       fox.py
 
-    Hit [ENTER] to update, [Ctrl-C] to cancel
+    Hit [ENTER] to accept, [Ctrl-C] to cancel
 
-    fox.update.py -> fox.py
 
+Pressing :guilabel:`Enter` causes the tool to overwrite the scripts with
+the new baseline updates and remove the temporary `.update.py` files.
 
 Run ``fox.py`` again and observe the ``assert`` does not raise an exception
 nor is a copy of the source file update generated. If in the future the test
