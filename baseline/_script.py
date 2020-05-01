@@ -26,18 +26,27 @@ import io
 import os
 import re
 import sys
-from enum import Enum
 
 
-class Mode(Enum):
+def _get_env_path(name):
+    path = os.environ.get(name, None)
+    if path:
+        path = os.path.abspath(os.path.expanduser(path))
+    return path
 
-    """Mode of operation."""
 
-    COPY = 0
-    """Create copy with updates."""
+BASELINE_UPDATES_PATH = _get_env_path('BASELINE_UPDATES_PATH')
+BASELINE_RELPATH_BASE = _get_env_path('BASELINE_RELPATH_BASE')
 
-    OVERWRITE = 1
-    """Overwrite script with updates."""
+if BASELINE_UPDATES_PATH and not BASELINE_RELPATH_BASE:
+    raise RuntimeError(
+        'BASELINE_RELPATH_BASE environment variable must be set when '
+        'BASELINE_UPDATES_PATH set')
+
+if BASELINE_RELPATH_BASE and not BASELINE_UPDATES_PATH:
+    raise RuntimeError(
+        'BASELINE_UPDATES_PATH environment variable must be set when '
+        'BASELINE_RELPATH_BASE set')
 
 
 DELIMITER_EXPRESSION = '"""' + '|' "'''"
@@ -163,7 +172,17 @@ class Script(object):
             self.replace_baseline_repr(linenum, self.updates[linenum])
 
         if not self.TEST_MODE:
-            path = '{}.update{}'.format(*os.path.splitext(self.path))
-            with io.open(path, 'w', encoding='utf-8') as fh:
+            update_filepath = self.path + '.update'
+
+            if BASELINE_UPDATES_PATH:
+                update_filepath = os.path.join(
+                    BASELINE_UPDATES_PATH,
+                    os.path.relpath(update_filepath, BASELINE_RELPATH_BASE))
+                update_dirpath = os.path.dirname(update_filepath)
+                if not os.path.exists(update_dirpath):
+                    os.makedirs(update_dirpath)
+
+            with io.open(update_filepath, 'w', encoding='utf-8') as fh:
                 fh.write('\n'.join(self.lines))
-            print('UPDATE: {}'.format(self.showpath(path)))
+
+            print('UPDATE: {}'.format(self.showpath(self.path)))

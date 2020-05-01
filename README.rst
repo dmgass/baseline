@@ -45,7 +45,7 @@ Run ``fox.py`` and observe that the ``assert`` raises an exception since
 the strings are not equal.  Because the comparison failed, the tool located
 the triple quoted baseline string in the source file and updated it with the
 mis-compared value. When the interpreter exited, the tool saved the updated
-source file but changed the file name to ``fox.update.py``:
+source file but changed the file name to ``fox.py.update``:
 
 .. code-block:: python
 
@@ -79,7 +79,7 @@ scripts:
 
 
 Pressing :guilabel:`Enter` causes the tool to overwrite the scripts with
-the new baseline updates and remove the temporary `.update.py` files.
+the new baseline updates and remove the temporary `.py.update` files.
 
 Run ``fox.py`` again and observe the ``assert`` does not raise an exception
 nor is a copy of the source file update generated. If in the future the test

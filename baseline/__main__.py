@@ -32,7 +32,6 @@ PY2 = sys.version_info.major < 3
 if PY2:  # pragma: no cover
     input = raw_input
 
-UPDATE_EXT = '.update.py'
 
 DESCRIPTION = """
 Locate scripts with baseline updates within the paths specified and modify 
@@ -57,7 +56,7 @@ def locate_updates(paths):
     for dirpath in (p for p in paths if os.path.isdir(p)):
         for path, _dirs, files in os.walk(dirpath):
             for name in files:
-                if name.lower().endswith(UPDATE_EXT):
+                if name.endswith('.update'):
                     updates.append(
                         os.path.join(os.path.relpath(path, dirpath), name))
     return updates
@@ -156,7 +155,7 @@ def main(args=None):
 
     if update_file_paths:
         script_paths = [
-            pth[:-len(UPDATE_EXT)] + '.py' for pth in update_file_paths]
+            os.path.splitext(pth)[0] for pth in update_file_paths]
 
         print('Found baseline updates for:')
         for path in script_paths:
@@ -167,7 +166,7 @@ def main(args=None):
             if not args.diff:
                 prompt = 'Hit [ENTER] to {}, [Ctrl-C] to cancel '.format(
                     'clean' if args.clean else
-                    'move' if args.move_path else 'accept')
+                    'move' if args.movepath else 'accept')
                 input(prompt)
 
             for script_path, update_path in zip(script_paths, update_file_paths):
