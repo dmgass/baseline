@@ -78,8 +78,8 @@ scripts:
     Hit [ENTER] to accept, [Ctrl-C] to cancel
 
 
-Pressing :guilabel:`Enter` causes the tool to overwrite the scripts with
-the new baseline updates and remove the temporary `.py.update` files.
+Pressing ``Enter`` causes the tool to overwrite the scripts with
+the new baseline updates and remove the temporary ``.py.update`` files.
 
 Run ``fox.py`` again and observe the ``assert`` does not raise an exception
 nor is a copy of the source file update generated. If in the future the test
