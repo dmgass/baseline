@@ -23,6 +23,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import atexit
+import difflib
 import inspect
 import os
 import sys
@@ -81,6 +82,9 @@ class Baseline(baseclass):
     baseline and modify the baseline to match the new value.
 
     """
+
+    # print differences (using print_diff() method) when comparison unequal
+    PRINT_DIFFS = os.environ.get('BASELINE_PRINT_DIFFS', 'NO').upper() == 'YES'
 
     TRANSFORMS = []
 
@@ -179,6 +183,13 @@ class Baseline(baseclass):
 
         return baseline
 
+    def print_diffs(self, other):
+        """Print differences from comparison with other string."""
+        keepend = True
+        diff_lines = difflib.context_diff(
+            self.splitlines(keepend), other.splitlines(keepend))
+        print(''.join(diff_lines).rstrip())
+
     def __eq__(self, text):
         """Compare string against baseline.
 
@@ -213,6 +224,9 @@ class Baseline(baseclass):
                 atexit.register(Baseline._atexit_callback)
 
             self._baselines_to_update.add(self)
+
+            if self.PRINT_DIFFS:
+                self.print_diffs(text)
 
         return is_equal
 

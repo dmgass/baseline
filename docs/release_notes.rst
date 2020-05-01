@@ -4,6 +4,35 @@
 
 Versions increment per `semver <http://semver.org/>`_.
 
+  .. Note::
+
+    Experimental features may change in a backward incompatible
+    manner without following `semver <http://semver.org/>`_.
+
+*****************
+1.1.0 2020-MAY-01
+*****************
+
++ Add ``--clean`` (`-c`) option to baseline command line tool to
+  remove update files.
+
++ Add ``--diff`` (`-d`) option to baseline command line tool that
+  shows difference and queries for overwrite permission for each
+  updated file.
+
++ Change update file extension to ``.py.update`` so that testing
+  frameworks such as ``unittest`` or ``pytest`` ignore them.
+
++ Add experimental feature to support specifying an alternative
+  location to write update files with the ``BASELINE_UPDATES_PATH``
+  environment variable. (Note, ``BASELINE_RELPATH_BASE`` must be
+  set when using this feature.)
+
++ Add experimental feature to print contextual differences whenever
+  a baseline mis-compare occurs. The feature may be turned on by
+  setting the environment variable (``BASELINE_PRINT_DIFFS="YES"``)
+  or overriding the class attribute (``Baseline.PRINT_DIFFS = True``).
+
 
 *****************
 1.0.0 2020-MAR-19

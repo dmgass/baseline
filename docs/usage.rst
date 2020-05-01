@@ -31,10 +31,10 @@ Run the script and observe that the ``assert`` raises an exception since
 the strings are not equal.  Because the comparison failed, the tool located
 the triple quoted baseline string in the source file and updated it with the
 miscompared value. When the interpretter exited, the tool saved the updated
-source file using the file extension ``.update.py``):
+source file using the file extension ``.py.update``):
 
 .. code-block:: python
-    :caption: hello.update.py
+    :caption: hello.py.update
 
     expected = Baseline("""Hello World!""")
 
@@ -44,19 +44,21 @@ source file using the file extension ``.update.py``):
 
 
 After reviewing the change with your favorite file differencing tool,
-accept the change by either manually overwritting the original file or use
-the ``baseline`` command line interface to scan the directory for updated
-scripts and accept them:
+accept the change by either manually overwriting the original file or use
+the ``baseline`` command line interface to scan the directory for baseline
+update files:
 
 .. code-block:: shell
 
     $ python -m baseline *
-    Found updates for:
+    Found baseline updates for:
       hello.py
 
     Hit [ENTER] to update, [Ctrl-C] to cancel
 
-    hello.update.py -> hello.py
+
+Pressing :guilabel:`Enter` causes the tool to overwrite the scripts with
+the new baseline updates and remove the temporary `.py.update` files.
 
 
 ******************
