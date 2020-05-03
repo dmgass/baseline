@@ -6,8 +6,22 @@ Versions increment per `semver <http://semver.org/>`_.
 
   .. Note::
 
-    Experimental features may change in a backward incompatible
-    manner without following `semver <http://semver.org/>`_.
+    Changes to experimental features only result in a bump of
+    the subminor (patch) version, including those introducing
+    backwards incompatibility.
+
+
+*****************
+1.1.1 2020-MAY-02
+*****************
+
++ Improve experimental feature to support specifying an alternative
+  location. Add ``BASELINE_MOVE_UPDATES`` environment variable that
+  when set to ``YES``, enables specifying an alternative location to
+  write update files. This master switch facilitates allowing CI/CD
+  systems to enable the feature while leaving the feature off in
+  local development while still using CI/CD resources (e.g. tox).
+
 
 *****************
 1.1.0 2020-MAY-01

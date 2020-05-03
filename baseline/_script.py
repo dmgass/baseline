@@ -28,25 +28,30 @@ import re
 import sys
 
 
-def _get_env_path(name):
-    path = os.environ.get(name, None)
-    if path:
-        path = os.path.abspath(os.path.expanduser(path))
+def _get_env_path(name, check=False):
+    if MOVE_UPDATES:
+        path = os.environ.get(name, None)
+
+        if path:
+            path = os.path.abspath(os.path.expanduser(path))
+        else:
+            raise RuntimeError(
+                '{} environment variable must be set when '
+                'BASELINE_MOVE_UPDATES set to YES'.format(name))
+
+        if check and not os.path.isdir(path):
+            raise RuntimeError(
+                '{}={} not a valid path'.format(name, path))
+
+    else:
+        path = None
+
     return path
 
 
-BASELINE_UPDATES_PATH = _get_env_path('BASELINE_UPDATES_PATH')
-BASELINE_RELPATH_BASE = _get_env_path('BASELINE_RELPATH_BASE')
-
-if BASELINE_UPDATES_PATH and not BASELINE_RELPATH_BASE:
-    raise RuntimeError(
-        'BASELINE_RELPATH_BASE environment variable must be set when '
-        'BASELINE_UPDATES_PATH set')
-
-if BASELINE_RELPATH_BASE and not BASELINE_UPDATES_PATH:
-    raise RuntimeError(
-        'BASELINE_UPDATES_PATH environment variable must be set when '
-        'BASELINE_RELPATH_BASE set')
+MOVE_UPDATES = os.environ.get('BASELINE_MOVE_UPDATES', 'NO').upper() == 'YES'
+UPDATES_PATH = _get_env_path('BASELINE_UPDATES_PATH')
+RELPATH_BASE = _get_env_path('BASELINE_RELPATH_BASE', check=True)
 
 
 DELIMITER_EXPRESSION = '"""' + '|' "'''"
@@ -174,11 +179,13 @@ class Script(object):
         if not self.TEST_MODE:
             update_filepath = self.path + '.update'
 
-            if BASELINE_UPDATES_PATH:
-                update_filepath = os.path.join(
-                    BASELINE_UPDATES_PATH,
-                    os.path.relpath(update_filepath, BASELINE_RELPATH_BASE))
+            if UPDATES_PATH:
+                relpath = os.path.relpath(update_filepath, RELPATH_BASE).replace(
+                    '..' + os.path.sep, '.up.' + os.path.sep)
+
+                update_filepath = os.path.join(UPDATES_PATH, relpath)
                 update_dirpath = os.path.dirname(update_filepath)
+
                 if not os.path.exists(update_dirpath):
                     os.makedirs(update_dirpath)
 
