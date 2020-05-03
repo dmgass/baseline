@@ -12,6 +12,17 @@ Versions increment per `semver <http://semver.org/>`_.
 
 
 *****************
+1.1.2 2020-MAY-02
+*****************
+
++ Maintain file permissions and owner (both when generating update
+  file and when applying update file to original script). Previously,
+  file owner and permissions were set based on permission levels of
+  execution context which caused issues when executing under elevated
+  permission levels (e.g. sudo).
+
+
+*****************
 1.1.1 2020-MAY-02
 *****************
 

@@ -109,8 +109,16 @@ def perform_action(script_path, update_path, args):
                 if answer == 'R':
                     return
 
+        stat_info = os.stat(script_path)
+
         with open(script_path, 'w') as script:
             script.write(new_content)
+
+        os.chmod(script_path, stat_info.st_mode)
+        try:
+            os.chown(script_path, stat_info.st_uid, stat_info.st_gid)
+        except AttributeError:
+            pass  # must be windows
 
     os.remove(update_path)
 

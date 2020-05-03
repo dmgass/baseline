@@ -192,4 +192,11 @@ class Script(object):
             with io.open(update_filepath, 'w', encoding='utf-8') as fh:
                 fh.write('\n'.join(self.lines))
 
-            print('UPDATE: {}'.format(self.showpath(self.path)))
+            stat_info = os.stat(self.path)
+            os.chmod(update_filepath, stat_info.st_mode)
+            try:
+                os.chown(update_filepath, stat_info.st_uid, stat_info.st_gid)
+            except AttributeError:
+                pass  # must be windows
+
+            print('BASELINE UPDATE: ' + update_filepath)
