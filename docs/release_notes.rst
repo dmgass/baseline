@@ -12,6 +12,21 @@ Versions increment per `semver <http://semver.org/>`_.
 
 
 *****************
+1.2.0 2020-DEC-22
+*****************
+
++ Add ``--force`` command line option to suppress acknowledgement
+  prompt.
+
++ Add Python 3.9 support advertisement. (Regression testing
+  added to release process.)
+
++ Remove Python 3.4 and 3.5 support advertisement. (Regression testing
+  removed from release process.) Nothing blocks installation, but no
+  promise exists that the package works with those interpreter versions.
+
+
+*****************
 1.1.2 2020-MAY-02
 *****************
 

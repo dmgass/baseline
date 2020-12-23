@@ -109,16 +109,20 @@ def perform_action(script_path, update_path, args):
                 if answer == 'R':
                     return
 
-        stat_info = os.stat(script_path)
+        try:
+            stat_info = os.stat(script_path)
+        except OSError:
+            stat_info = None
 
         with open(script_path, 'w') as script:
             script.write(new_content)
 
-        os.chmod(script_path, stat_info.st_mode)
-        try:
-            os.chown(script_path, stat_info.st_uid, stat_info.st_gid)
-        except AttributeError:
-            pass  # must be windows
+        if stat_info is not None:
+            os.chmod(script_path, stat_info.st_mode)
+            try:
+                os.chown(script_path, stat_info.st_uid, stat_info.st_gid)
+            except AttributeError:
+                pass  # must be windows
 
     os.remove(update_path)
 
@@ -150,6 +154,10 @@ def main(args=None):
     parser.add_argument(
         '--movepath', help='location to move script updates')
 
+    parser.add_argument(
+        '--force', action='store_true',
+        help='do not prompt (does not apply to --diff')
+
     args = parser.parse_args(args)
 
     paths = args.path or ['.']
@@ -171,7 +179,7 @@ def main(args=None):
         print()
 
         try:
-            if not args.diff:
+            if not args.diff and not args.force:
                 prompt = 'Hit [ENTER] to {}, [Ctrl-C] to cancel '.format(
                     'clean' if args.clean else
                     'move' if args.movepath else 'accept')
