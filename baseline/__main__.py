@@ -48,7 +48,7 @@ def locate_updates(paths):
     update files and return their locations.
 
     :param paths: paths to search
-    :returns: relative paths of update files found
+    :returns: relative paths (from CWD) of update files found
     :rtype: list of str
 
     """
@@ -58,7 +58,7 @@ def locate_updates(paths):
             for name in files:
                 if name.endswith('.update'):
                     updates.append(
-                        os.path.join(os.path.relpath(path, dirpath), name))
+                        os.path.join(os.path.relpath(path, os.getcwd()), name))
     return updates
 
 
@@ -72,18 +72,15 @@ def perform_action(script_path, update_path, args):
     """
     if args.movepath:
         script_path = os.path.join(args.movepath, script_path)
-        if update_path.startswith('..'):
-            raise RuntimeError(
-                'destination outside of move path: ' + script_path)
         script_dirpath = os.path.dirname(script_path)
         if not os.path.isdir(script_dirpath):
             os.makedirs(script_dirpath)
 
-    with open(update_path) as update:
-        new_content = update.read()
-
     if not args.clean:
-        if args.diff:
+        with open(update_path) as update:
+            new_content = update.read()
+
+        if args.diff and os.path.exists(script_path):
             with open(script_path) as script:
                 old_content = script.read()
 
@@ -141,7 +138,7 @@ def main(args=None):
 
     parser.add_argument(
         'path', nargs='*',
-        help='module or directory path')
+        help='directory path to search (default to CWD)')
 
     parser.add_argument(
         '-c', '--clean', action='store_true',
@@ -164,6 +161,16 @@ def main(args=None):
 
     # weed out incorrect names, expand wildcards
     paths = [path for pattern in paths for path in glob(pattern)]
+
+    if args.movepath:
+        rel_paths = [os.path.relpath(path, os.getcwd()) for path in paths]
+
+        if any(path.startswith('..') for path in rel_paths):
+            print(
+                "ERROR: search paths outside of current working directory "
+                "not allowed when using --movepath option"
+            )
+            return 1
 
     update_file_paths = locate_updates(paths)
 

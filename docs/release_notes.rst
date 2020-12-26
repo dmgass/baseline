@@ -12,6 +12,16 @@ Versions increment per `semver <http://semver.org/>`_.
 
 
 *****************
+1.2.1 2020-DEC-26
+*****************
+
++ Fix ``baseline`` command line interface support for specifying
+  directories to search. Previously, baseline inadvertently raised
+  an exception if a directory other than the default (``'.'``) was
+  specified.
+
+
+*****************
 1.2.0 2020-DEC-22
 *****************
 
